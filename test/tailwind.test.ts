@@ -102,8 +102,11 @@ const KEYWORDS_TAKEN: [string, string[]][] = [
 	["scroll-pr", ["px"]]
 ];
 
-/** Physical utilities whose value is a width in steps or a colour, which this stylesheet has to answer for. */
-const WIDTHS_AND_COLOURS: string[] = ["border-t", "border-b", "divide-x", "divide-y"];
+/**
+ * Physical utilities whose value is a width in steps or a colour, which this stylesheet has to answer for.
+ * Both axes are here, because a border that is two hairlines across the text should be two hairlines down it as well.
+ */
+const WIDTHS_AND_COLOURS: string[] = ["border-t", "border-b", "border-l", "border-r", "border-x", "border-y", "divide-x", "divide-y"];
 
 /** The stylesheet itself, read once. */
 const STYLESHEET_TEXT = readFileSync(STYLESHEET, "utf8");
@@ -244,7 +247,16 @@ test("a width in steps is counted in rem rather than in somebody else's pixels",
 });
 
 test("the arbitrary value an existing project already wrote still resolves", function checksLegacyArbitraryValues(): void {
-	for (const pattern of ["border-bs-*", "border-be-*", "border-bl-*", "divide-bs-*", "divide-is-*"]) {
+	for (const pattern of ["border-bs-*", "border-be-*", "border-bl-*", "border-s-*", "border-e-*", "border-li-*", "divide-bs-*", "divide-is-*"]) {
 		assert.ok(bodyOf(pattern).includes("--value([*], [length])"), `${pattern} should keep the value it always took`);
+	}
+});
+
+test("a bare border is the same hairline whichever axis it is drawn on", function checksBareBorders(): void {
+	const hairline = "0.0625rem";
+
+	for (const bare of ["border-bs", "border-be", "border-bl", "border-s", "border-e", "border-li"]) {
+		assert.ok(DEFINED.has(bare), `${bare} should be defined`);
+		assert.ok(bodyOf(bare).includes(hairline), `${bare} should be one hairline`);
 	}
 });

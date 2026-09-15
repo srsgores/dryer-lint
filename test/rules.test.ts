@@ -155,6 +155,8 @@ script.run("logical-classes", logicalClasses, {
 		{code: 'const classes = "md:hover:-ml-2";', errors: [{messageId: "physical", data: {explanation: "md:hover:-ml-2 is a physical property; use -ms-2"}}]},
 		{code: 'const classes = "text-left";', errors: [{messageId: "physical", data: {explanation: "text-left is a physical alignment; use text-start"}}]},
 		{code: 'const classes = "divide-y";', errors: [{messageId: "physical", data: {explanation: "divide-y is a physical property; use divide-bs"}}]},
+		{code: 'const classes = "border-x-2";', errors: [{messageId: "physical", data: {explanation: "border-x-2 is a physical property; use border-li-2"}}]},
+		{code: 'const classes = "border-y";', errors: [{messageId: "physical", data: {explanation: "border-y is a physical property; use border-bl"}}]},
 		{code: "const classes = `w-[3rem]`;", errors: [{messageId: "physical", data: {explanation: "w-[3rem] is a physical property; use inline-[3rem]"}}]}
 	]
 });

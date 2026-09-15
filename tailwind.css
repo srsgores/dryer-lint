@@ -397,9 +397,9 @@
 }
 
 /*
- * Borders on the block axis.
- * Tailwind 4 ships `border-bs` and `border-be` itself, in pixels; these restate them on the rem hairline and come after, so the rem width is the one that lands.
- * `border-bl` it does not ship at all.
+ * Borders, on both axes.
+ * Tailwind 4 ships every one of these but `border-bl` and `border-li`, and counts their widths in whole pixels.
+ * These restate them on the rem hairline and come after, so the rem width is the one that lands and the two axes agree.
  * Each takes a step, an arbitrary length or a colour, the way its physical counterpart does.
  */
 @utility border-bs {
@@ -436,6 +436,42 @@
 	border-block-width: --value([*], [length]);
 	border-block-color: --value(--color-*);
 	border-block-color: --value([color]);
+}
+
+@utility border-s {
+	border-inline-start-width: 0.0625rem;
+}
+
+@utility border-s-* {
+	border-inline-start-width: calc(--value(integer) * 0.0625rem);
+	border-inline-start-width: --value([length]);
+	border-inline-start-width: --value([*], [length]);
+	border-inline-start-color: --value(--color-*);
+	border-inline-start-color: --value([color]);
+}
+
+@utility border-e {
+	border-inline-end-width: 0.0625rem;
+}
+
+@utility border-e-* {
+	border-inline-end-width: calc(--value(integer) * 0.0625rem);
+	border-inline-end-width: --value([length]);
+	border-inline-end-width: --value([*], [length]);
+	border-inline-end-color: --value(--color-*);
+	border-inline-end-color: --value([color]);
+}
+
+@utility border-li {
+	border-inline-width: 0.0625rem;
+}
+
+@utility border-li-* {
+	border-inline-width: calc(--value(integer) * 0.0625rem);
+	border-inline-width: --value([length]);
+	border-inline-width: --value([*], [length]);
+	border-inline-color: --value(--color-*);
+	border-inline-color: --value([color]);
 }
 
 /*

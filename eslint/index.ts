@@ -13,7 +13,9 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import {DEFAULT_ALIASES} from "../lib/aliases.ts";
 import {readNode} from "../lib/nodes.ts";
+import {loadOptional} from "../lib/optional.ts";
 import type {DryerLintOptions} from "../lib/types/options.ts";
+import type {AstroPlugin, SveltePlugin} from "../lib/types/optional-peers.ts";
 import aliasedImports from "./rules/aliased-imports.ts";
 import arrayDestructuring from "./rules/array-destructuring.ts";
 import logicalClasses from "./rules/logical-classes.ts";
@@ -137,6 +139,18 @@ const SVELTE_FILES: string[] = ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js
 
 /** Astro writes pages, layouts and components in one. */
 const ASTRO_FILES: string[] = ["**/*.astro"];
+
+/**
+ * The packages a project installs only when it writes in the framework they serve.
+ * Each is a value rather than something written inline, so nothing resolves it until a project turns that option on.
+ */
+const SVELTE_PLUGIN = "eslint-plugin-svelte";
+
+/** The astro plugin, which brings the rules an astro page answers to. */
+const ASTRO_PLUGIN = "eslint-plugin-astro";
+
+/** The astro parser, which is what reads a page's frontmatter and its markup as one file. */
+const ASTRO_PARSER = "astro-eslint-parser";
 
 /** A function longer than a glance is documented; shorter ones read as prose. */
 const GLANCEABLE_LINES = 4;
@@ -294,8 +308,8 @@ function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
  * @returns The layers to add, or none when the project has no svelte in it
  */
 async function buildSvelteLayers(options: DryerLintOptions, houseRules: Linter.RulesRecord): Promise<Linter.Config[]> {
-	const svelte = await import("eslint-plugin-svelte");
-	const configs = readNode<{configs: {recommended: Linter.Config[]; prettier: Linter.Config[]}}>(svelte.default ?? svelte).configs;
+	const svelte = await loadOptional<SveltePlugin>(SVELTE_PLUGIN);
+	const configs = svelte.configs;
 
 	return [
 		...configs.recommended,
@@ -320,16 +334,16 @@ async function buildSvelteLayers(options: DryerLintOptions, houseRules: Linter.R
  * @returns The layers to add, or none when the project has no astro in it
  */
 async function buildAstroLayers(houseRules: Linter.RulesRecord): Promise<Linter.Config[]> {
-	const astro = await import("eslint-plugin-astro");
-	const astroParser = await import("astro-eslint-parser");
-	const configs = readNode<{configs: {recommended: Linter.Config[]}}>(astro.default ?? astro).configs;
+	const astro = await loadOptional<AstroPlugin>(ASTRO_PLUGIN);
+	const astroParser = await loadOptional<Linter.Parser>(ASTRO_PARSER);
+	const configs = astro.configs;
 
 	return [
 		...configs.recommended,
 		{
 			files: ASTRO_FILES,
 			languageOptions: {
-				parser: readNode<Linter.Parser>(astroParser.default ?? astroParser),
+				parser: astroParser,
 				parserOptions: {
 					parser: tseslint.parser,
 					extraFileExtensions: [".astro"]
