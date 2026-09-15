@@ -209,7 +209,11 @@
 	}
 }
 
-/* A rule drawn between siblings, on the block axis and on the inline one. */
+/*
+ * A rule drawn between siblings, on the block axis and on the inline one.
+ * Tailwind counts a border width in whole pixels, which this file counts in sixteenths of a rem, so a `2` is twice the hairline rather than twice somebody's screen.
+ * A step, an arbitrary length and a colour are read from the same value, and whichever one it turns out to be is the declaration that survives.
+ */
 @utility divide-bs {
 	& > :not([hidden]) ~ :not([hidden]) {
 		border-block-start-width: 0.0625rem;
@@ -218,7 +222,11 @@
 
 @utility divide-bs-* {
 	& > :not([hidden]) ~ :not([hidden]) {
+		border-block-start-width: calc(--value(integer) * 0.0625rem);
+		border-block-start-width: --value([length]);
 		border-block-start-width: --value([*], [length]);
+		border-block-start-color: --value(--color-*);
+		border-block-start-color: --value([color]);
 	}
 }
 
@@ -230,7 +238,11 @@
 
 @utility divide-is-* {
 	& > :not([hidden]) ~ :not([hidden]) {
+		border-inline-start-width: calc(--value(integer) * 0.0625rem);
+		border-inline-start-width: --value([length]);
 		border-inline-start-width: --value([*], [length]);
+		border-inline-start-color: --value(--color-*);
+		border-inline-start-color: --value([color]);
 	}
 }
 
@@ -384,13 +396,22 @@
 	block-size: 100%;
 }
 
-/* Borders on the block axis, which Tailwind ships only as border-t and border-b. */
+/*
+ * Borders on the block axis.
+ * Tailwind 4 ships `border-bs` and `border-be` itself, in pixels; these restate them on the rem hairline and come after, so the rem width is the one that lands.
+ * `border-bl` it does not ship at all.
+ * Each takes a step, an arbitrary length or a colour, the way its physical counterpart does.
+ */
 @utility border-bs {
 	border-block-start-width: 0.0625rem;
 }
 
 @utility border-bs-* {
+	border-block-start-width: calc(--value(integer) * 0.0625rem);
+	border-block-start-width: --value([length]);
 	border-block-start-width: --value([*], [length]);
+	border-block-start-color: --value(--color-*);
+	border-block-start-color: --value([color]);
 }
 
 @utility border-be {
@@ -398,7 +419,11 @@
 }
 
 @utility border-be-* {
+	border-block-end-width: calc(--value(integer) * 0.0625rem);
+	border-block-end-width: --value([length]);
 	border-block-end-width: --value([*], [length]);
+	border-block-end-color: --value(--color-*);
+	border-block-end-color: --value([color]);
 }
 
 @utility border-bl {
@@ -406,7 +431,11 @@
 }
 
 @utility border-bl-* {
+	border-block-width: calc(--value(integer) * 0.0625rem);
+	border-block-width: --value([length]);
 	border-block-width: --value([*], [length]);
+	border-block-color: --value(--color-*);
+	border-block-color: --value([color]);
 }
 
 /*

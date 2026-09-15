@@ -7,7 +7,7 @@ import {readFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {test} from "node:test";
 import {fileURLToPath} from "node:url";
-import {describeNaturalSize, describePhysicalClass} from "../lib/classes.ts";
+import {LOGICAL_REPLACEMENTS, describeNaturalSize, describePhysicalClass} from "../lib/classes.ts";
 
 /** Where the stylesheet sits, whichever directory the test was started from. */
 const STYLESHEET = join(dirname(dirname(fileURLToPath(import.meta.url))), "tailwind.css");
@@ -102,15 +102,20 @@ const KEYWORDS_TAKEN: [string, string[]][] = [
 	["scroll-pr", ["px"]]
 ];
 
+/** Physical utilities whose value is a width in steps or a colour, which this stylesheet has to answer for. */
+const WIDTHS_AND_COLOURS: string[] = ["border-t", "border-b", "divide-x", "divide-y"];
+
+/** The stylesheet itself, read once. */
+const STYLESHEET_TEXT = readFileSync(STYLESHEET, "utf8");
+
 /**
  * Reads every utility the stylesheet defines, keeping the star that stands for a value.
  * @returns The name of each utility, as the stylesheet wrote it
  */
 function readDefinedUtilities(): Set<string> {
-	const stylesheet = readFileSync(STYLESHEET, "utf8");
 	const defined: Set<string> = new Set();
 
-	for (const [, name] of stylesheet.matchAll(DEFINED_UTILITY)) {
+	for (const [, name] of STYLESHEET_TEXT.matchAll(DEFINED_UTILITY)) {
 		defined.add(name);
 	}
 
@@ -119,6 +124,33 @@ function readDefinedUtilities(): Set<string> {
 
 /** Every utility this package's stylesheet defines, read once. */
 const DEFINED = readDefinedUtilities();
+
+/**
+ * Reads back what one utility declares, braces and all, so a test can ask which values it takes.
+ * @param utility The utility's name, as the stylesheet wrote it
+ * @returns Everything between its braces, or an empty string when the stylesheet does not define it
+ */
+function bodyOf(utility: string): string {
+	const opened = STYLESHEET_TEXT.indexOf(`@utility ${utility} {`);
+	let index = opened;
+	let depth = 0;
+	let ended = -1;
+
+	while (index >= 0 && index < STYLESHEET_TEXT.length && ended < 0) {
+		const character = STYLESHEET_TEXT.charAt(index);
+
+		if (character === "{") {
+			depth += 1;
+		} else if (character === "}") {
+			depth -= 1;
+			ended = depth === 0 ? index : ended;
+		}
+
+		index += 1;
+	}
+
+	return ended < 0 ? "" : STYLESHEET_TEXT.slice(opened, ended + 1);
+}
 
 /**
  * Answers whether a class the rule suggested for a keyword value is one somebody could actually write.
@@ -184,4 +216,35 @@ test("a negative margin keeps a utility of its own on every axis", function chec
 	assert.ok(DEFINED.has("-mbe-*"));
 	assert.ok(DEFINED.has("-mbl-*"));
 	assert.ok(DEFINED.has("-mli-*"));
+});
+
+test("a width in steps and a colour both reach the utility the rule recommends", function checksWidthsAndColours(): void {
+	for (const physical of WIDTHS_AND_COLOURS) {
+		const logical = LOGICAL_REPLACEMENTS.get(physical) ?? "";
+		const pattern = `${logical}-*`;
+		const body = bodyOf(pattern);
+
+		assert.notEqual(logical, "", `${physical} should have a logical replacement`);
+		assert.equal(suggestionFor(`${physical}-2`), `${logical}-2`);
+		assert.equal(suggestionFor(`${physical}-red-500`), `${logical}-red-500`);
+		assert.ok(DEFINED.has(pattern), `${pattern} should be defined`);
+		assert.ok(body.includes("--value(integer)"), `${pattern} should take a width in steps`);
+		assert.ok(body.includes("--value(--color-"), `${pattern} should take a theme colour`);
+		assert.ok(body.includes("--value([color])"), `${pattern} should take an arbitrary colour`);
+		assert.ok(body.includes("--value([length])"), `${pattern} should take an arbitrary width`);
+	}
+});
+
+test("a width in steps is counted in rem rather than in somebody else's pixels", function checksStepsAreRelative(): void {
+	for (const physical of WIDTHS_AND_COLOURS) {
+		const pattern = `${LOGICAL_REPLACEMENTS.get(physical) ?? ""}-*`;
+
+		assert.ok(bodyOf(pattern).includes("calc(--value(integer) * 0.0625rem)"), `${pattern} should count steps in rem`);
+	}
+});
+
+test("the arbitrary value an existing project already wrote still resolves", function checksLegacyArbitraryValues(): void {
+	for (const pattern of ["border-bs-*", "border-be-*", "border-bl-*", "divide-bs-*", "divide-is-*"]) {
+		assert.ok(bodyOf(pattern).includes("--value([*], [length])"), `${pattern} should keep the value it always took`);
+	}
 });
