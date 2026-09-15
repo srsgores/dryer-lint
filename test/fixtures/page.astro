@@ -1,0 +1,10 @@
+---
+const heading = "Invoices";
+if (!heading) {
+	return Astro.redirect("/");
+}
+---
+
+<section class="mb-4 h-64">
+	<h1 class="text-left">{heading}</h1>
+</section>

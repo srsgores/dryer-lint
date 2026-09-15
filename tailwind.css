@@ -1,0 +1,240 @@
+/*
+ * The logical utilities the lint rules ask for, which Tailwind itself does not ship.
+ * Tailwind names the four sides of a screen: mt, mb, ml, mr, w, top, bottom.
+ * A logical name talks about the writing instead: before and after the text starts, and along or across the line.
+ * The two are the same edge in English and different edges in Arabic, Hebrew, Japanese and anything else set another way round.
+ * Import this after `@import "tailwindcss";` so the class names `dryer/logical-classes` demands actually exist.
+ */
+
+/*
+ * Margin, padding and scroll offsets on the block axis, and the shorthands for both axes.
+ * `mbs` is margin-block-start, `mbe` is margin-block-end, `mbl` is margin-block and `mli` is margin-inline.
+ */
+@utility mbs-* {
+	margin-block-start: --spacing(--value(number));
+	margin-block-start: --value([*]);
+}
+
+@utility -mbs-* {
+	margin-block-start: calc(--spacing(--value(number)) * -1);
+}
+
+@utility mbe-* {
+	margin-block-end: --spacing(--value(number));
+	margin-block-end: --value([*]);
+}
+
+@utility -mbe-* {
+	margin-block-end: calc(--spacing(--value(number)) * -1);
+}
+
+@utility mbl-* {
+	margin-block: --spacing(--value(number));
+	margin-block: --value([*]);
+}
+
+@utility -mbl-* {
+	margin-block: calc(--spacing(--value(number)) * -1);
+}
+
+@utility mli-* {
+	margin-inline: --spacing(--value(number));
+	margin-inline: --value([*]);
+}
+
+@utility -mli-* {
+	margin-inline: calc(--spacing(--value(number)) * -1);
+}
+
+@utility pbs-* {
+	padding-block-start: --spacing(--value(number));
+	padding-block-start: --value([*]);
+}
+
+@utility pbe-* {
+	padding-block-end: --spacing(--value(number));
+	padding-block-end: --value([*]);
+}
+
+@utility pbl-* {
+	padding-block: --spacing(--value(number));
+	padding-block: --value([*]);
+}
+
+@utility pli-* {
+	padding-inline: --spacing(--value(number));
+	padding-inline: --value([*]);
+}
+
+@utility scroll-mbl-* {
+	scroll-margin-block: --spacing(--value(number));
+	scroll-margin-block: --value([*]);
+}
+
+@utility scroll-mli-* {
+	scroll-margin-inline: --spacing(--value(number));
+	scroll-margin-inline: --value([*]);
+}
+
+@utility scroll-pbl-* {
+	scroll-padding-block: --spacing(--value(number));
+	scroll-padding-block: --value([*]);
+}
+
+@utility scroll-pli-* {
+	scroll-padding-inline: --spacing(--value(number));
+	scroll-padding-inline: --value([*]);
+}
+
+/* Insets and gaps along each axis, which Tailwind ships only as inset-x, inset-y, top and bottom. */
+@utility inset-bl-* {
+	inset-block: --spacing(--value(number));
+	inset-block: --value([*]);
+}
+
+@utility inset-li-* {
+	inset-inline: --spacing(--value(number));
+	inset-inline: --value([*]);
+}
+
+@utility inset-bs-* {
+	inset-block-start: --spacing(--value(number));
+	inset-block-start: --value(ratio);
+	inset-block-start: --value([*]);
+}
+
+@utility inset-be-* {
+	inset-block-end: --spacing(--value(number));
+	inset-block-end: --value(ratio);
+	inset-block-end: --value([*]);
+}
+
+@utility gap-bl-* {
+	row-gap: --spacing(--value(number));
+	row-gap: --value([*]);
+}
+
+@utility gap-li-* {
+	column-gap: --spacing(--value(number));
+	column-gap: --value([*]);
+}
+
+/* Space between siblings, on the axis the writing runs along rather than the one the screen does. */
+@utility space-bs-* {
+	& > :not([hidden]) ~ :not([hidden]) {
+		margin-block-start: --spacing(--value(number));
+		margin-block-start: --value([*]);
+	}
+}
+
+@utility space-is-* {
+	& > :not([hidden]) ~ :not([hidden]) {
+		margin-inline-start: --spacing(--value(number));
+		margin-inline-start: --value([*]);
+	}
+}
+
+/* A rule drawn between siblings, on the block axis and on the inline one. */
+@utility divide-bs {
+	& > :not([hidden]) ~ :not([hidden]) {
+		border-block-start-width: 0.0625rem;
+	}
+}
+
+@utility divide-bs-* {
+	& > :not([hidden]) ~ :not([hidden]) {
+		border-block-start-width: --value([*], [length]);
+	}
+}
+
+@utility divide-is {
+	& > :not([hidden]) ~ :not([hidden]) {
+		border-inline-start-width: 0.0625rem;
+	}
+}
+
+@utility divide-is-* {
+	& > :not([hidden]) ~ :not([hidden]) {
+		border-inline-start-width: --value([*], [length]);
+	}
+}
+
+/*
+ * Sizing on the inline axis, which Tailwind ships only as w, min-w and max-w.
+ * There is no `block-*` to match, on purpose: a box takes the block size its content asks for.
+ * `block-full` is the one exception, for a box filling a parent that was already bounded.
+ */
+@utility inline-full {
+	inline-size: 100%;
+}
+
+@utility inline-auto {
+	inline-size: auto;
+}
+
+@utility inline-fit {
+	inline-size: fit-content;
+}
+
+@utility inline-* {
+	inline-size: --spacing(--value(number));
+	inline-size: --value(ratio);
+	inline-size: --value([*]);
+}
+
+@utility min-inline-full {
+	min-inline-size: 100%;
+}
+
+@utility min-inline-* {
+	min-inline-size: --spacing(--value(number));
+	min-inline-size: --value(ratio);
+	min-inline-size: --value([*]);
+}
+
+@utility max-inline-full {
+	max-inline-size: 100%;
+}
+
+@utility max-inline-* {
+	max-inline-size: --spacing(--value(number));
+	max-inline-size: --value(ratio);
+	max-inline-size: --value([*]);
+	max-inline-size: --value(--container-*);
+}
+
+@utility block-full {
+	block-size: 100%;
+}
+
+/* Borders on the block axis, which Tailwind ships only as border-t and border-b. */
+@utility border-bs {
+	border-block-start-width: 0.0625rem;
+}
+
+@utility border-bs-* {
+	border-block-start-width: --value([*], [length]);
+}
+
+@utility border-be {
+	border-block-end-width: 0.0625rem;
+}
+
+@utility border-be-* {
+	border-block-end-width: --value([*], [length]);
+}
+
+@utility border-bl {
+	border-block-width: 0.0625rem;
+}
+
+@utility border-bl-* {
+	border-block-width: --value([*], [length]);
+}
+
+/* An icon that takes its size from the text beside it, so it grows when the text does rather than standing at a fixed box. */
+@utility icon {
+	/* stylelint-disable-next-line dryer/natural-size -- one em is the text beside it, which is the measurement this whole file argues for */
+	inline-size: 1em;
+	aspect-ratio: 1;
+}

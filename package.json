@@ -1,0 +1,115 @@
+{
+	"name": "dryer-lint",
+	"version": "0.1.0",
+	"description": "The shared eslint, stylelint and prettier conventions behind a logical, content-sized, one-sentence-a-line house style",
+	"license": "MIT",
+	"author": "Sean Goresht",
+	"repository": "github:srsgores/dryer-lint",
+	"type": "module",
+	"engines": {
+		"node": ">=22.18"
+	},
+	"main": "./index.ts",
+	"types": "./index.ts",
+	"exports": {
+		".": "./index.ts",
+		"./eslint": "./eslint/index.ts",
+		"./stylelint": "./stylelint/index.ts",
+		"./prettier": "./prettier/index.ts",
+		"./tailwind.css": "./tailwind.css",
+		"./package.json": "./package.json"
+	},
+	"files": [
+		"index.ts",
+		"eslint",
+		"stylelint",
+		"prettier",
+		"lib",
+		"tailwind.css",
+		"tsconfig.json",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"check": "node node_modules/typescript-native/bin/tsc --noEmit",
+		"lint": "eslint . && stylelint tailwind.css",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"test": "node --test \"test/**/*.test.ts\""
+	},
+	"keywords": [
+		"eslint",
+		"eslintconfig",
+		"eslintplugin",
+		"stylelint",
+		"stylelint-config",
+		"prettier",
+		"tailwindcss",
+		"logical-properties"
+	],
+	"peerDependencies": {
+		"@eslint/js": "^10.0.1",
+		"astro-eslint-parser": "^1.4.0",
+		"eslint": "^10.10.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-astro": "^1.7.0",
+		"eslint-plugin-jsdoc": "^64.3.6",
+		"eslint-plugin-svelte": "^3.23.0",
+		"globals": "^17.12.0",
+		"jiti": "^2.7.0",
+		"prettier": "^3.9.6",
+		"prettier-plugin-astro": "^0.14.1",
+		"prettier-plugin-svelte": "^4.1.1",
+		"stylelint": "^17.15.0",
+		"stylelint-config-tailwindcss": "^1.0.1",
+		"stylelint-plugin-logical-css": "^2.1.0",
+		"svelte-eslint-parser": "^1.8.1",
+		"typescript-eslint": "^8.69.0"
+	},
+	"peerDependenciesMeta": {
+		"astro-eslint-parser": {
+			"optional": true
+		},
+		"eslint-plugin-astro": {
+			"optional": true
+		},
+		"eslint-plugin-svelte": {
+			"optional": true
+		},
+		"jiti": {
+			"optional": true
+		},
+		"prettier-plugin-astro": {
+			"optional": true
+		},
+		"prettier-plugin-svelte": {
+			"optional": true
+		},
+		"svelte-eslint-parser": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@types/node": "^22.20.2",
+		"astro-eslint-parser": "^1.4.0",
+		"eslint": "^10.10.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-astro": "^1.7.0",
+		"eslint-plugin-jsdoc": "^64.4.0",
+		"eslint-plugin-svelte": "^3.23.0",
+		"globals": "^17.12.0",
+		"jiti": "^2.7.0",
+		"prettier": "^3.9.6",
+		"prettier-plugin-astro": "^0.14.1",
+		"prettier-plugin-svelte": "^4.1.1",
+		"stylelint": "^17.15.0",
+		"stylelint-config-tailwindcss": "^1.0.1",
+		"stylelint-plugin-logical-css": "^2.1.0",
+		"svelte": "^5.57.0",
+		"svelte-eslint-parser": "^1.8.1",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.70.0",
+		"typescript-native": "npm:typescript@^7.0.2"
+	}
+}
