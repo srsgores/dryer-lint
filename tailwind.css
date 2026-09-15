@@ -46,6 +46,26 @@
 	margin-inline: calc(--spacing(--value(number)) * -1);
 }
 
+/*
+ * An auto margin pushes a box away from an edge rather than measuring the gap, so it is a keyword and not a step.
+ * `mli-auto` is what centres a column, and is what `dryer/logical-classes` asks for in place of `mx-auto`.
+ */
+@utility mbs-auto {
+	margin-block-start: auto;
+}
+
+@utility mbe-auto {
+	margin-block-end: auto;
+}
+
+@utility mbl-auto {
+	margin-block: auto;
+}
+
+@utility mli-auto {
+	margin-inline: auto;
+}
+
 @utility pbs-* {
 	padding-block-start: --spacing(--value(number));
 	padding-block-start: --value([*]);
@@ -86,14 +106,36 @@
 	scroll-padding-inline: --value([*]);
 }
 
+@utility scroll-mbs-* {
+	scroll-margin-block-start: --spacing(--value(number));
+	scroll-margin-block-start: --value([*]);
+}
+
+@utility scroll-mbe-* {
+	scroll-margin-block-end: --spacing(--value(number));
+	scroll-margin-block-end: --value([*]);
+}
+
+@utility scroll-pbs-* {
+	scroll-padding-block-start: --spacing(--value(number));
+	scroll-padding-block-start: --value([*]);
+}
+
+@utility scroll-pbe-* {
+	scroll-padding-block-end: --spacing(--value(number));
+	scroll-padding-block-end: --value([*]);
+}
+
 /* Insets and gaps along each axis, which Tailwind ships only as inset-x, inset-y, top and bottom. */
 @utility inset-bl-* {
 	inset-block: --spacing(--value(number));
+	inset-block: --value(ratio);
 	inset-block: --value([*]);
 }
 
 @utility inset-li-* {
 	inset-inline: --spacing(--value(number));
+	inset-inline: --value(ratio);
 	inset-inline: --value([*]);
 }
 
@@ -107,6 +149,39 @@
 	inset-block-end: --spacing(--value(number));
 	inset-block-end: --value(ratio);
 	inset-block-end: --value([*]);
+}
+
+/* An inset is let go of with `auto` and taken all the way with `full`, the way top-auto and top-full do. */
+@utility inset-bs-auto {
+	inset-block-start: auto;
+}
+
+@utility inset-be-auto {
+	inset-block-end: auto;
+}
+
+@utility inset-bl-auto {
+	inset-block: auto;
+}
+
+@utility inset-li-auto {
+	inset-inline: auto;
+}
+
+@utility inset-bs-full {
+	inset-block-start: 100%;
+}
+
+@utility inset-be-full {
+	inset-block-end: 100%;
+}
+
+@utility inset-bl-full {
+	inset-block: 100%;
+}
+
+@utility inset-li-full {
+	inset-inline: 100%;
 }
 
 @utility gap-bl-* {
@@ -176,24 +251,126 @@
 	inline-size: fit-content;
 }
 
+/*
+ * A viewport width is named the way Tailwind names it, since that is the class the rule recommends, but measured on the inline axis.
+ * In a vertical writing mode the inline axis is the one down the page, which is what `vi` follows and `vw` does not.
+ */
+@utility inline-min {
+	inline-size: min-content;
+}
+
+@utility inline-max {
+	inline-size: max-content;
+}
+
+@utility inline-screen {
+	inline-size: 100vi;
+}
+
+@utility inline-dvw {
+	inline-size: 100dvi;
+}
+
+@utility inline-svw {
+	inline-size: 100svi;
+}
+
+@utility inline-lvw {
+	inline-size: 100lvi;
+}
+
 @utility inline-* {
 	inline-size: --spacing(--value(number));
 	inline-size: --value(ratio);
 	inline-size: --value([*]);
+	inline-size: --value(--container-*);
 }
 
 @utility min-inline-full {
 	min-inline-size: 100%;
 }
 
+@utility min-inline-auto {
+	min-inline-size: auto;
+}
+
+@utility min-inline-fit {
+	min-inline-size: fit-content;
+}
+
+@utility min-inline-min {
+	min-inline-size: min-content;
+}
+
+@utility min-inline-max {
+	min-inline-size: max-content;
+}
+
+@utility min-inline-screen {
+	min-inline-size: 100vi;
+}
+
+@utility min-inline-dvw {
+	min-inline-size: 100dvi;
+}
+
+@utility min-inline-svw {
+	min-inline-size: 100svi;
+}
+
+@utility min-inline-lvw {
+	min-inline-size: 100lvi;
+}
+
 @utility min-inline-* {
 	min-inline-size: --spacing(--value(number));
 	min-inline-size: --value(ratio);
 	min-inline-size: --value([*]);
+	min-inline-size: --value(--container-*);
 }
 
 @utility max-inline-full {
 	max-inline-size: 100%;
+}
+
+/*
+ * A cap is lifted with `none` rather than with `auto`, because `auto` is not one of the values max-inline-size takes.
+ * `max-inline-prose` is the reading measure, which is counted in characters so it follows whatever the reader set the type to.
+ */
+@utility max-inline-none {
+	max-inline-size: none;
+}
+
+@utility max-inline-fit {
+	max-inline-size: fit-content;
+}
+
+@utility max-inline-min {
+	max-inline-size: min-content;
+}
+
+@utility max-inline-max {
+	max-inline-size: max-content;
+}
+
+@utility max-inline-screen {
+	max-inline-size: 100vi;
+}
+
+@utility max-inline-dvw {
+	max-inline-size: 100dvi;
+}
+
+@utility max-inline-svw {
+	max-inline-size: 100svi;
+}
+
+@utility max-inline-lvw {
+	max-inline-size: 100lvi;
+}
+
+@utility max-inline-prose {
+	max-inline-size: 65ch;
 }
 
 @utility max-inline-* {
@@ -230,6 +407,50 @@
 
 @utility border-bl-* {
 	border-block-width: --value([*], [length]);
+}
+
+/*
+ * The two block-edge radii, which Tailwind ships only as rounded-t and rounded-b.
+ * A block edge is two corners rather than one, so each of these sets the pair `rounded-ss` and `rounded-se` name separately.
+ */
+@utility rounded-bs {
+	border-start-start-radius: 0.25rem;
+	border-start-end-radius: 0.25rem;
+}
+
+@utility rounded-bs-none {
+	border-start-start-radius: 0;
+	border-start-end-radius: 0;
+}
+
+@utility rounded-bs-full {
+	border-start-start-radius: calc(infinity* 1rem);
+	border-start-end-radius: calc(infinity* 1rem);
+}
+
+@utility rounded-bs-* {
+	border-start-start-radius: --value(--radius-*, [length], [percentage]);
+	border-start-end-radius: --value(--radius-*, [length], [percentage]);
+}
+
+@utility rounded-be {
+	border-end-start-radius: 0.25rem;
+	border-end-end-radius: 0.25rem;
+}
+
+@utility rounded-be-none {
+	border-end-start-radius: 0;
+	border-end-end-radius: 0;
+}
+
+@utility rounded-be-full {
+	border-end-start-radius: calc(infinity* 1rem);
+	border-end-end-radius: calc(infinity* 1rem);
+}
+
+@utility rounded-be-* {
+	border-end-start-radius: --value(--radius-*, [length], [percentage]);
+	border-end-end-radius: --value(--radius-*, [length], [percentage]);
 }
 
 /* An icon that takes its size from the text beside it, so it grows when the text does rather than standing at a fixed box. */

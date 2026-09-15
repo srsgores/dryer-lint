@@ -20,6 +20,8 @@ export interface DryerLintOptions {
 	aliases?: AliasTarget[];
 	/** Names to add to the ones that say nothing about what they hold. */
 	vagueNames?: string[];
+	/** Names to take off the denylist, for keys in a shape the project did not design. */
+	allowNames?: string[];
 	/** Paths to ignore on top of the build output and vendored parts that are ignored anyway. */
 	ignores?: string[];
 	/** Whether to ask for database statements to live in query files, which is off unless asked for. */

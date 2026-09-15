@@ -6,6 +6,7 @@ import svelteParser from "svelte-eslint-parser";
 import tseslint from "typescript-eslint";
 import logicalClasses from "../eslint/rules/logical-classes.ts";
 import naturalSize from "../eslint/rules/natural-size.ts";
+import typesDirectory from "../eslint/rules/types-directory.ts";
 import unbrokenSentences from "../eslint/rules/unbroken-sentences.ts";
 
 RuleTester.describe = describe;
@@ -82,6 +83,33 @@ astro.run("unbroken-sentences in astro", unbrokenSentences, {
 			filename: "index.astro",
 			code: "---\n---\n<p>\n\tA sentence that carries\n\tonto the next line.\n</p>",
 			errors: [{messageId: "wrapped"}]
+		}
+	]
+});
+
+svelte.run("types-directory in svelte", typesDirectory, {
+	valid: [{filename: "Card.svelte", code: '<script lang="ts">\n\tinterface Props {\n\t\ttitle: string;\n\t}\n</script>'}],
+	invalid: [
+		{
+			filename: "Card.svelte",
+			code: '<script lang="ts">\n\tinterface Invoice {\n\t\ttotal: number;\n\t}\n</script>',
+			errors: [{messageId: "typesDirectory"}]
+		}
+	]
+});
+
+astro.run("types-directory in astro", typesDirectory, {
+	valid: [{filename: "index.astro", code: "---\ninterface Props {\n\ttitle: string;\n}\n---\n<h1></h1>"}],
+	invalid: [
+		{
+			filename: "index.astro",
+			code: "---\ninterface Invoice {\n\ttotal: number;\n}\n---\n<h1></h1>",
+			errors: [{messageId: "typesDirectory"}]
+		},
+		{
+			filename: "index.astro",
+			code: "---\ntype Props = {title: string};\ntype Invoice = {total: number};\n---\n<h1></h1>",
+			errors: [{messageId: "typesDirectory"}]
 		}
 	]
 });

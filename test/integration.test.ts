@@ -6,6 +6,16 @@ import {fileURLToPath} from "node:url";
 import {ESLint} from "eslint";
 import type {Linter} from "eslint";
 import {dryerLint} from "../eslint/index.ts";
+import type {DryerLintOptions} from "../lib/types/options.ts";
+
+/**
+ * Answers whether a rule that spoke was the denylist.
+ * @param rule The rule that reported
+ * @returns True when it was id-denylist
+ */
+function isDenylist(rule: string): boolean {
+	return rule === "id-denylist";
+}
 
 /** Where the files this test lints sit, whichever directory the test was started from. */
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
@@ -64,4 +74,45 @@ test("an astro page may redirect from its frontmatter without answering twice", 
 	});
 
 	assert.equal(complained, false);
+});
+
+/**
+ * Lints one line of TypeScript with the house config, and names the rules that spoke.
+ * @param code The line to lint
+ * @param options What the project would have said about itself
+ * @returns Every rule that reported, in the order it reported
+ */
+async function rulesThatSpoke(code: string, options: DryerLintOptions): Promise<string[]> {
+	const configuration = await dryerLint(options);
+	const eslint = new ESLint({overrideConfigFile: true, overrideConfig: configuration as Linter.Config[]});
+	const linted = await eslint.lintText(code, {filePath: "thing.ts"});
+
+	return linted.flatMap(function toRules(one): string[] {
+		return one.messages.map(function toRule(said): string {
+			return said.ruleId ?? "";
+		});
+	});
+}
+
+test("a vague name is denied until the project says the shape is not its own", async function checksAllowNames(): Promise<void> {
+	const denied = await rulesThatSpoke('export const tag = {content: "one", item: "two"};', {documentation: false});
+	const allowed = await rulesThatSpoke('export const tag = {content: "one", item: "two"};', {
+		documentation: false,
+		allowNames: ["content", "params", "items", "item"]
+	});
+
+	assert.equal(denied.filter(isDenylist).length, 2);
+	assert.equal(allowed.filter(isDenylist).length, 0);
+});
+
+test("allowing a name leaves the rest of the denylist standing", async function checksAllowNamesIsNarrow(): Promise<void> {
+	const spoke = await rulesThatSpoke('export const tag = {content: "one", payload: "two"};', {documentation: false, allowNames: ["content"]});
+
+	assert.equal(spoke.filter(isDenylist).length, 1);
+});
+
+test("a name the project adds is denied alongside the built-in ones", async function checksVagueNamesStillAdds(): Promise<void> {
+	const spoke = await rulesThatSpoke('export const tag = {blob: "one"};', {documentation: false, vagueNames: ["blob"]});
+
+	assert.equal(spoke.filter(isDenylist).length, 1);
 });

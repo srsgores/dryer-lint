@@ -101,7 +101,10 @@ typescript.run("types-directory", typesDirectory, {
 		{code: "interface Shape { side: number; }", filename: "src/types/shape.ts"},
 		{code: "type Shape = {side: number};", filename: "src/app.d.ts"}
 	],
-	invalid: [{code: "interface Shape { side: number; }", filename: "src/page.ts", errors: [{messageId: "typesDirectory"}]}]
+	invalid: [
+		{code: "interface Shape { side: number; }", filename: "src/page.ts", errors: [{messageId: "typesDirectory"}]},
+		{code: "interface Props { title: string; }", filename: "src/page.ts", errors: [{messageId: "typesDirectory"}]}
+	]
 });
 
 script.run("switch-break", switchBreak, {

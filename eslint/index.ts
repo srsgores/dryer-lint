@@ -259,9 +259,13 @@ const NO_NULL = {
  */
 function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
 	const restricted = options.noNull === true ? [...CODE_STYLE, NO_NULL] : CODE_STYLE;
+	const allowed = new Set(options.allowNames ?? []);
+	const denied = [...VAGUE_NAMES, ...(options.vagueNames ?? [])].filter(function isStillVague(name: string): boolean {
+		return !allowed.has(name);
+	});
 
 	return {
-		"id-denylist": ["error", ...VAGUE_NAMES, ...(options.vagueNames ?? [])],
+		"id-denylist": ["error", ...denied],
 		"id-length": ["error", {min: 2, properties: "never"}],
 		"func-style": ["error", "declaration"],
 		"func-names": ["error", "always"],
