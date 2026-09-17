@@ -7,7 +7,7 @@ import {readFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {test} from "node:test";
 import {fileURLToPath} from "node:url";
-import {LOGICAL_REPLACEMENTS, describeNaturalSize, describePhysicalClass} from "../lib/classes.ts";
+import {LOGICAL_REPLACEMENTS, describeNaturalSize, describePhysicalClass} from "#lib/classes.ts";
 
 /** Where the stylesheet sits, whichever directory the test was started from. */
 const STYLESHEET = join(dirname(dirname(fileURLToPath(import.meta.url))), "tailwind.css");

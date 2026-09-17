@@ -5,7 +5,7 @@
  * The stylesheet is held to the same rule by stylelint, which also insists the tokens are written in oklch.
  */
 import type {Rule} from "eslint";
-import {readNode} from "../../lib/nodes.ts";
+import {readNode} from "#lib/nodes.ts";
 
 /** A colour written out, as a hex triplet or as one of the functions that take channels. */
 const WRITTEN_COLOUR: RegExp = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\(/i;

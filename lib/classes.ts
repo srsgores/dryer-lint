@@ -3,7 +3,7 @@
  * A class name is the one place a stylesheet gets written without a stylesheet, so it answers to the same rules a declaration does.
  * Physical box properties have a logical name, and a size is the content's to decide rather than a number typed here.
  */
-import type {SizeAxis, SizePrefix} from "./types/classes.ts";
+import type {SizeAxis, SizePrefix} from "#lib/types/classes.ts";
 
 /** Physical utility prefixes and the logical prefix each one is written as instead. */
 export const LOGICAL_REPLACEMENTS: Map<string, string> = new Map([

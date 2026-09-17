@@ -6,7 +6,7 @@
  * It is asked for again, written the long way, with a name that says what it is for.
  */
 import type {Rule} from "eslint";
-import type {WalkedFunction} from "../../lib/types/walked-function.ts";
+import type {WalkedFunction} from "#lib/types/walked-function.ts";
 
 /** Keeps arrows for borrowing `this`, and asks for a name everywhere else. */
 const rule: Rule.RuleModule = {

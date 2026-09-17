@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import {test} from "node:test";
 import stylelint from "stylelint";
 import type {Config} from "stylelint";
-import naturalSize from "../stylelint/plugins/natural-size.ts";
-import noPixelClasses from "../stylelint/plugins/no-pixel-classes.ts";
-import houseConfig from "../stylelint/index.ts";
+import naturalSize from "#stylelint/plugins/natural-size.ts";
+import noPixelClasses from "#stylelint/plugins/no-pixel-classes.ts";
+import houseConfig from "#stylelint/index.ts";
 
 /** Just the two plugins, so a case tests one rule rather than the whole config. */
 const plugins: Config = {plugins: [naturalSize, noPixelClasses]};

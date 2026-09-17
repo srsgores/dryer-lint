@@ -6,7 +6,7 @@
 import stylelint from "stylelint";
 import type {PostcssResult} from "stylelint";
 import type {AtRule, Root} from "postcss";
-import {hasPixelLength, splitClassNames} from "../../lib/classes.ts";
+import {hasPixelLength, splitClassNames} from "#lib/classes.ts";
 
 /** What this rule is called wherever stylelint names it. */
 export const ruleName = "dryer/no-pixel-classes";

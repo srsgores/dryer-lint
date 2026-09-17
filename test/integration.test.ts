@@ -5,8 +5,8 @@ import {test} from "node:test";
 import {fileURLToPath} from "node:url";
 import {ESLint} from "eslint";
 import type {Linter} from "eslint";
-import {dryerLint} from "../eslint/index.ts";
-import type {DryerLintOptions} from "../lib/types/options.ts";
+import {dryerLint} from "#eslint/index.ts";
+import type {DryerLintOptions} from "#lib/types/options.ts";
 
 /**
  * Answers whether a rule that spoke was the denylist.
@@ -115,4 +115,24 @@ test("a name the project adds is denied alongside the built-in ones", async func
 	const spoke = await rulesThatSpoke('export const tag = {blob: "one"};', {documentation: false, vagueNames: ["blob"]});
 
 	assert.equal(spoke.filter(isDenylist).length, 1);
+});
+
+test("the HTML layer reports bare divs and leaves dl groups alone", async function checksHtmlBareDivs(): Promise<void> {
+	const configuration = await dryerLint({html: true});
+	const eslint = new ESLint({overrideConfigFile: true, overrideConfig: configuration as Linter.Config[]});
+	const [invalid] = await eslint.lintText("<div></div>", {filePath: "index.html"});
+	const [valid] = await eslint.lintText("<dl><div><dt>Term</dt><dd>Def</dd></div></dl>", {filePath: "index.html"});
+
+	assert.equal(
+		invalid.messages.some(function isBareDiv(said): boolean {
+			return said.ruleId === "dryer/no-bare-divs";
+		}),
+		true
+	);
+	assert.equal(
+		valid.messages.some(function isBareDiv(said): boolean {
+			return said.ruleId === "dryer/no-bare-divs";
+		}),
+		false
+	);
 });

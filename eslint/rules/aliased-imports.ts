@@ -6,9 +6,9 @@
  */
 import {dirname, relative, resolve} from "node:path";
 import type {Rule} from "eslint";
-import {DEFAULT_ALIASES} from "../../lib/aliases.ts";
-import {readNode} from "../../lib/nodes.ts";
-import type {AliasSuggestion, AliasTarget} from "../../lib/types/aliases.ts";
+import {DEFAULT_ALIASES} from "#lib/aliases.ts";
+import {readNode} from "#lib/nodes.ts";
+import type {AliasSuggestion, AliasTarget} from "#lib/types/aliases.ts";
 
 /** ESLint loads its own config by a relative path, so that one file's imports stay relative. */
 const BOOTSTRAP_CONFIG_PATTERN: RegExp = /(?:^|\/)eslint\.config\.[cm]?[jt]s$/;
@@ -18,6 +18,9 @@ const ROUTE_TYPES_PATTERN: RegExp = /^\.\/\$types(?:\.js)?$/;
 
 /** A backslash, which is how Windows writes the separator between one directory and the next. */
 const WINDOWS_SEPARATOR: RegExp = /\\/g;
+
+/** A forward slash or backslash separating directory names. */
+const PATH_SEPARATOR: RegExp = /[/\\]/;
 
 /**
  * Finds the alias a relative path should have been written as.
@@ -46,13 +49,24 @@ function findAliasReplacement(sourceFile: string, importPath: string, aliases: A
 	return replacement;
 }
 
+/**
+ * Asks whether an import path climbs up through a parent directory.
+ * @param importPath The import string
+ * @returns Whether the path walks up the directory tree
+ */
+function isClimbingPath(importPath: string): boolean {
+	const segments = importPath.split(PATH_SEPARATOR);
+	return segments.includes("..");
+}
+
 /** Addresses a module by the name of the place it lives, rather than by the way there from here. */
 const rule: Rule.RuleModule = {
 	meta: {
 		type: "suggestion",
 		docs: {description: "Enforces path aliases rather than relative paths that walk the tree"},
 		messages: {
-			useAlias: "Use {{alias}} rather than a relative path to reach {{suggested}}"
+			useAlias: "Use {{alias}} rather than a relative path to reach {{suggested}}",
+			noRelative: "Use an import alias rather than a relative path that walks up the tree"
 		},
 		fixable: "code",
 		schema: [
@@ -83,17 +97,27 @@ const rule: Rule.RuleModule = {
 		 * @param importPath What that string says
 		 */
 		function inspectImportSource(sourceNode: Rule.Node, importPath: string): void {
-			const replacement = findAliasReplacement(context.filename, importPath, aliases);
+			const normalizedSource = context.filename.replace(WINDOWS_SEPARATOR, "/");
+			const isExempt = ROUTE_TYPES_PATTERN.test(importPath) || BOOTSTRAP_CONFIG_PATTERN.test(normalizedSource);
 
-			if (replacement) {
-				context.report({
-					node: sourceNode,
-					messageId: "useAlias",
-					data: {alias: replacement.alias, suggested: replacement.suggested},
-					fix: function applyAliasFix(fixer): Rule.Fix {
-						return fixer.replaceText(sourceNode, `"${replacement.suggested}"`);
-					}
-				});
+			if (!isExempt) {
+				const replacement = findAliasReplacement(context.filename, importPath, aliases);
+
+				if (replacement) {
+					context.report({
+						node: sourceNode,
+						messageId: "useAlias",
+						data: {alias: replacement.alias, suggested: replacement.suggested},
+						fix: function applyAliasFix(fixer): Rule.Fix {
+							return fixer.replaceText(sourceNode, `"${replacement.suggested}"`);
+						}
+					});
+				} else if (isClimbingPath(importPath)) {
+					context.report({
+						node: sourceNode,
+						messageId: "noRelative"
+					});
+				}
 			}
 		}
 

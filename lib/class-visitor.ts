@@ -3,9 +3,9 @@
  * A class name hides from stylelint by living in an attribute, so eslint is the only thing that ever sees it.
  */
 import type {Rule} from "eslint";
-import {splitClassNames} from "./classes.ts";
-import {readNode} from "./nodes.ts";
-import type {ClassReporter, ClassStringNode, WrittenName} from "./types/class-visitor.ts";
+import {splitClassNames} from "#lib/classes.ts";
+import {readNode} from "#lib/nodes.ts";
+import type {ClassReporter, ClassStringNode, WrittenName} from "#lib/types/class-visitor.ts";
 
 /** A prop that names a corner of the screen rather than a class, and reads like one. */
 const NOT_CLASSES: Set<string> = new Set(["position", "side", "align", "placement", "anchor", "origin"]);

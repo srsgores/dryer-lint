@@ -4,8 +4,8 @@
  * Every physical utility in a class attribute is asked for again by its logical name, variants, negations and arbitrary values included.
  */
 import type {Rule} from "eslint";
-import {createClassVisitor} from "../../lib/class-visitor.ts";
-import {describePhysicalClass} from "../../lib/classes.ts";
+import {createClassVisitor} from "#lib/class-visitor.ts";
+import {describePhysicalClass} from "#lib/classes.ts";
 
 /** Names the logical class a physical one should have been written as. */
 const rule: Rule.RuleModule = {

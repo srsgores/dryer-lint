@@ -19,6 +19,11 @@
 		"./tailwind.css": "./tailwind.css",
 		"./package.json": "./package.json"
 	},
+	"imports": {
+		"#lib/*": "./lib/*",
+		"#eslint/*": "./eslint/*",
+		"#stylelint/*": "./stylelint/*"
+	},
 	"files": [
 		"index.ts",
 		"eslint",

@@ -1,13 +1,15 @@
 /** The class and sentence rules read through the real svelte and astro parsers, since markup is where class names live. */
 import {describe, it} from "node:test";
 import {RuleTester} from "eslint";
+import htmlParser from "@html-eslint/parser";
 import astroParser from "astro-eslint-parser";
 import svelteParser from "svelte-eslint-parser";
 import tseslint from "typescript-eslint";
-import logicalClasses from "../eslint/rules/logical-classes.ts";
-import naturalSize from "../eslint/rules/natural-size.ts";
-import typesDirectory from "../eslint/rules/types-directory.ts";
-import unbrokenSentences from "../eslint/rules/unbroken-sentences.ts";
+import logicalClasses from "#eslint/rules/logical-classes.ts";
+import naturalSize from "#eslint/rules/natural-size.ts";
+import noBareDivs from "#eslint/rules/no-bare-divs.ts";
+import typesDirectory from "#eslint/rules/types-directory.ts";
+import unbrokenSentences from "#eslint/rules/unbroken-sentences.ts";
 
 RuleTester.describe = describe;
 RuleTester.it = it;
@@ -20,6 +22,11 @@ const svelte = new RuleTester({
 /** Astro pages, read by the parser astro projects actually use. */
 const astro = new RuleTester({
 	languageOptions: {parser: astroParser, parserOptions: {parser: tseslint.parser, extraFileExtensions: [".astro"], ecmaVersion: 2024, sourceType: "module"}}
+});
+
+/** HTML markup files, read by the parser html projects use. */
+const html = new RuleTester({
+	languageOptions: {parser: htmlParser}
 });
 
 svelte.run("logical-classes in svelte", logicalClasses, {
@@ -111,5 +118,54 @@ astro.run("types-directory in astro", typesDirectory, {
 			code: "---\ntype Props = {title: string};\ntype Invoice = {total: number};\n---\n<h1></h1>",
 			errors: [{messageId: "typesDirectory"}]
 		}
+	]
+});
+
+svelte.run("no-bare-divs in svelte", noBareDivs, {
+	valid: [
+		{filename: "Card.svelte", code: '<div class="card"></div>'},
+		{filename: "Card.svelte", code: "<div class:active={true}></div>"},
+		{filename: "Card.svelte", code: "<div bind:this={anchor}></div>"},
+		{filename: "Card.svelte", code: "<div on:click={run}></div>"},
+		{filename: "Card.svelte", code: "<div {...props}></div>"},
+		{filename: "Card.svelte", code: "<dl><div><dt>Term</dt><dd>Definition</dd></div></dl>"},
+		{filename: "Card.svelte", code: "<dl>{#each records as record}<div><dt>{record.title}</dt><dd>{record.detail}</dd></div>{/each}</dl>"},
+		{filename: "Card.svelte", code: "<dl>{#if visible}<div><dt>Term</dt><dd>Definition</dd></div>{/if}</dl>"}
+	],
+	invalid: [
+		{filename: "Card.svelte", code: "<div></div>", errors: [{messageId: "bareDiv"}]},
+		{filename: "Card.svelte", code: "<main><div></div></main>", errors: [{messageId: "bareDiv"}]},
+		{filename: "Card.svelte", code: "<dl><dt>Term</dt><dd><div></div></dd></dl>", errors: [{messageId: "bareDiv"}]},
+		{filename: "Card.svelte", code: "<dl><div><div></div></div></dl>", errors: [{messageId: "bareDiv"}]}
+	]
+});
+
+astro.run("no-bare-divs in astro", noBareDivs, {
+	valid: [
+		{filename: "index.astro", code: '---\n---\n<div class="card"></div>'},
+		{filename: "index.astro", code: '---\n---\n<div id="card"></div>'},
+		{filename: "index.astro", code: "---\n---\n<dl><div><dt>Term</dt><dd>Definition</dd></div></dl>"},
+		{filename: "index.astro", code: "---\n---\n<dl>{records.map(record => <div><dt>{record.title}</dt><dd>{record.detail}</dd></div>)}</dl>"}
+	],
+	invalid: [
+		{filename: "index.astro", code: "---\n---\n<div></div>", errors: [{messageId: "bareDiv"}]},
+		{filename: "index.astro", code: "---\n---\n<main><div></div></main>", errors: [{messageId: "bareDiv"}]},
+		{filename: "index.astro", code: "---\n---\n<dl><dt>Term</dt><dd><div></div></dd></dl>", errors: [{messageId: "bareDiv"}]},
+		{filename: "index.astro", code: "---\n---\n<dl><div><div></div></div></dl>", errors: [{messageId: "bareDiv"}]}
+	]
+});
+
+html.run("no-bare-divs in html", noBareDivs, {
+	valid: [
+		{filename: "index.html", code: '<div class="card"></div>'},
+		{filename: "index.html", code: '<div id="card"></div>'},
+		{filename: "index.html", code: "<dl><div><dt>Term</dt><dd>Definition</dd></div></dl>"},
+		{filename: "index.html", code: '<dl><div class="group"><dt>Term</dt><dd>Definition</dd></div></dl>'}
+	],
+	invalid: [
+		{filename: "index.html", code: "<div></div>", errors: [{messageId: "bareDiv"}]},
+		{filename: "index.html", code: "<main><div></div></main>", errors: [{messageId: "bareDiv"}]},
+		{filename: "index.html", code: "<dl><dt>Term</dt><dd><div></div></dd></dl>", errors: [{messageId: "bareDiv"}]},
+		{filename: "index.html", code: "<dl><div><div></div></div></dl>", errors: [{messageId: "bareDiv"}]}
 	]
 });

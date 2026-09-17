@@ -2,6 +2,7 @@
  * This package is linted by the rules it ships, which is the only test that matters for a house style.
  * Three layers follow, each turning a rule off where the thing it forbids is the subject rather than the style.
  */
+import {DEFAULT_ALIASES} from "./lib/aliases.ts";
 import {dryerLint} from "./eslint/index.ts";
 
 /** Where the class names the rules report are the table they are read from rather than markup. */
@@ -20,7 +21,10 @@ const OTHER_PEOPLE_SHAPES: string[] = ["eslint/rules/**", "lib/**", "stylelint/p
  */
 const TESTS: string[] = ["test/**"];
 
-const configuration = await dryerLint({ignores: ["coverage/**", "test/fixtures/**"]});
+const configuration = await dryerLint({
+	ignores: ["coverage/**", "test/fixtures/**"],
+	aliases: [...DEFAULT_ALIASES, {prefix: "lib", alias: "#lib"}, {prefix: "eslint", alias: "#eslint"}, {prefix: "stylelint", alias: "#stylelint"}]
+});
 
 export default [
 	...configuration,

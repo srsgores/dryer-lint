@@ -2,22 +2,23 @@
 import {describe, it} from "node:test";
 import {RuleTester} from "eslint";
 import tseslint from "typescript-eslint";
-import aliasedImports from "../eslint/rules/aliased-imports.ts";
-import arrayDestructuring from "../eslint/rules/array-destructuring.ts";
-import logicalClasses from "../eslint/rules/logical-classes.ts";
-import namedFunctions from "../eslint/rules/named-functions.ts";
-import namedPatterns from "../eslint/rules/named-patterns.ts";
-import naturalSize from "../eslint/rules/natural-size.ts";
-import noArrayChain from "../eslint/rules/no-array-chain.ts";
-import noInlineSql from "../eslint/rules/no-inline-sql.ts";
-import noProseLineComments from "../eslint/rules/no-prose-line-comments.ts";
-import notesAreAsides from "../eslint/rules/notes-are-asides.ts";
-import oneReturn from "../eslint/rules/one-return.ts";
-import switchBreak from "../eslint/rules/switch-break.ts";
-import themeColours from "../eslint/rules/theme-colours.ts";
-import typesDirectory from "../eslint/rules/types-directory.ts";
-import unwrappedComments from "../eslint/rules/unwrapped-comments.ts";
-import verbFirstDescriptions from "../eslint/rules/verb-first-descriptions.ts";
+import aliasedImports from "#eslint/rules/aliased-imports.ts";
+import arrayDestructuring from "#eslint/rules/array-destructuring.ts";
+import logicalClasses from "#eslint/rules/logical-classes.ts";
+import namedFunctions from "#eslint/rules/named-functions.ts";
+import namedPatterns from "#eslint/rules/named-patterns.ts";
+import naturalSize from "#eslint/rules/natural-size.ts";
+import noArrayChain from "#eslint/rules/no-array-chain.ts";
+import noBareDivs from "#eslint/rules/no-bare-divs.ts";
+import noInlineSql from "#eslint/rules/no-inline-sql.ts";
+import noProseLineComments from "#eslint/rules/no-prose-line-comments.ts";
+import notesAreAsides from "#eslint/rules/notes-are-asides.ts";
+import oneReturn from "#eslint/rules/one-return.ts";
+import switchBreak from "#eslint/rules/switch-break.ts";
+import themeColours from "#eslint/rules/theme-colours.ts";
+import typesDirectory from "#eslint/rules/types-directory.ts";
+import unwrappedComments from "#eslint/rules/unwrapped-comments.ts";
+import verbFirstDescriptions from "#eslint/rules/verb-first-descriptions.ts";
 
 RuleTester.describe = describe;
 RuleTester.it = it;
@@ -72,7 +73,8 @@ script.run("aliased-imports", aliasedImports, {
 	valid: [
 		{code: 'import {one} from "$lib/one.ts";', filename: "src/routes/page.ts"},
 		{code: 'import {Load} from "./$types";', filename: "src/routes/page.ts"},
-		{code: 'import config from "./elsewhere.ts";', filename: "src/pages/page.ts"}
+		{code: 'import config from "./elsewhere.ts";', filename: "src/pages/page.ts"},
+		{code: 'import {dryerLint} from "../eslint/index.ts";', filename: "eslint.config.ts"}
 	],
 	invalid: [
 		{
@@ -87,6 +89,16 @@ script.run("aliased-imports", aliasedImports, {
 			options: [[{prefix: "tests", alias: "@tests"}]],
 			output: 'import {two} from "@tests/two.ts";',
 			errors: [{messageId: "useAlias"}]
+		},
+		{
+			code: 'import {readNode} from "../../lib/nodes.ts";',
+			filename: "eslint/rules/no-bare-divs.ts",
+			errors: [{messageId: "noRelative"}]
+		},
+		{
+			code: 'import {something} from "../unaliased/module.ts";',
+			filename: "src/deep/page.ts",
+			errors: [{messageId: "noRelative"}]
 		}
 	]
 });
@@ -175,5 +187,36 @@ script.run("natural-size", naturalSize, {
 		{code: 'const classes = "size-4";', errors: [{messageId: "pinned"}]},
 		{code: 'const classes = "gap-[3px]";', errors: [{messageId: "pinned"}]},
 		{code: 'const classes = "max-inline-64";', options: [{allowMaxInline: false}], errors: [{messageId: "pinned"}]}
+	]
+});
+
+/** JSX modules, for the rules that inspect tags and markup written in JavaScript. */
+const jsx = new RuleTester({
+	languageOptions: {
+		ecmaVersion: 2024,
+		sourceType: "module",
+		parserOptions: {ecmaFeatures: {jsx: true}}
+	}
+});
+
+jsx.run("no-bare-divs", noBareDivs, {
+	valid: [
+		{code: 'const element = <div className="card"></div>;'},
+		{code: 'const element = <div id="card"></div>;'},
+		{code: "const element = <div {...props}></div>;"},
+		{code: "const element = <div hidden></div>;"},
+		{code: "const element = <dl><div><dt>Term</dt><dd>Def</dd></div></dl>;"},
+		{code: "const element = <dl>{records.map(record => <div><dt>{record.title}</dt><dd>{record.detail}</dd></div>)}</dl>;"},
+		{code: "const element = <dl><><div><dt>Term</dt><dd>Def</dd></div></></dl>;"},
+		{code: "const element = <dl><div></div></dl>;"},
+		{code: "const element = <Div></Div>;"},
+		{code: "const element = <section><span>Hello</span></section>;"}
+	],
+	invalid: [
+		{code: "const element = <div></div>;", errors: [{messageId: "bareDiv"}]},
+		{code: "const element = <div />;", errors: [{messageId: "bareDiv"}]},
+		{code: "const element = <main><div></div></main>;", errors: [{messageId: "bareDiv"}]},
+		{code: "const element = <dl><div><div></div></div></dl>;", errors: [{messageId: "bareDiv"}]},
+		{code: "const element = <dl><dt>Term</dt><dd><div></div></dd></dl>;", errors: [{messageId: "bareDiv"}]}
 	]
 });

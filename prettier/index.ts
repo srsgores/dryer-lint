@@ -4,7 +4,7 @@
  * A wide line, because a sentence in a comment or a string is not improved by being folded in half.
  */
 import type {Config} from "prettier";
-import type {PrettierOptions} from "../lib/types/prettier.ts";
+import type {PrettierOptions} from "#lib/types/prettier.ts";
 
 /** What every project in this house formats to, whichever framework it is written in. */
 export const SHARED_OPTIONS: Config = {

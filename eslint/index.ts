@@ -11,28 +11,29 @@ import prettier from "eslint-config-prettier";
 import jsdoc from "eslint-plugin-jsdoc";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import {DEFAULT_ALIASES} from "../lib/aliases.ts";
-import {readNode} from "../lib/nodes.ts";
-import {loadOptional} from "../lib/optional.ts";
-import type {DryerLintOptions} from "../lib/types/options.ts";
-import type {AstroPlugin, SveltePlugin} from "../lib/types/optional-peers.ts";
-import aliasedImports from "./rules/aliased-imports.ts";
-import arrayDestructuring from "./rules/array-destructuring.ts";
-import logicalClasses from "./rules/logical-classes.ts";
-import namedFunctions from "./rules/named-functions.ts";
-import namedPatterns from "./rules/named-patterns.ts";
-import naturalSize from "./rules/natural-size.ts";
-import noArrayChain from "./rules/no-array-chain.ts";
-import noInlineSql from "./rules/no-inline-sql.ts";
-import noProseLineComments from "./rules/no-prose-line-comments.ts";
-import notesAreAsides from "./rules/notes-are-asides.ts";
-import oneReturn from "./rules/one-return.ts";
-import switchBreak from "./rules/switch-break.ts";
-import themeColours from "./rules/theme-colours.ts";
-import typesDirectory from "./rules/types-directory.ts";
-import unbrokenSentences from "./rules/unbroken-sentences.ts";
-import unwrappedComments from "./rules/unwrapped-comments.ts";
-import verbFirstDescriptions from "./rules/verb-first-descriptions.ts";
+import {DEFAULT_ALIASES} from "#lib/aliases.ts";
+import {readNode} from "#lib/nodes.ts";
+import {loadOptional} from "#lib/optional.ts";
+import type {DryerLintOptions} from "#lib/types/options.ts";
+import type {AstroPlugin, SveltePlugin} from "#lib/types/optional-peers.ts";
+import aliasedImports from "#eslint/rules/aliased-imports.ts";
+import arrayDestructuring from "#eslint/rules/array-destructuring.ts";
+import logicalClasses from "#eslint/rules/logical-classes.ts";
+import namedFunctions from "#eslint/rules/named-functions.ts";
+import namedPatterns from "#eslint/rules/named-patterns.ts";
+import naturalSize from "#eslint/rules/natural-size.ts";
+import noArrayChain from "#eslint/rules/no-array-chain.ts";
+import noBareDivs from "#eslint/rules/no-bare-divs.ts";
+import noInlineSql from "#eslint/rules/no-inline-sql.ts";
+import noProseLineComments from "#eslint/rules/no-prose-line-comments.ts";
+import notesAreAsides from "#eslint/rules/notes-are-asides.ts";
+import oneReturn from "#eslint/rules/one-return.ts";
+import switchBreak from "#eslint/rules/switch-break.ts";
+import themeColours from "#eslint/rules/theme-colours.ts";
+import typesDirectory from "#eslint/rules/types-directory.ts";
+import unbrokenSentences from "#eslint/rules/unbroken-sentences.ts";
+import unwrappedComments from "#eslint/rules/unwrapped-comments.ts";
+import verbFirstDescriptions from "#eslint/rules/verb-first-descriptions.ts";
 
 /** The rules this house writes itself, since neither eslint nor its plugins ship them. */
 export const plugin = {
@@ -45,6 +46,8 @@ export const plugin = {
 		"named-patterns": namedPatterns,
 		"natural-size": naturalSize,
 		"no-array-chain": noArrayChain,
+		"no-bare-div": noBareDivs,
+		"no-bare-divs": noBareDivs,
 		"no-inline-sql": noInlineSql,
 		"no-prose-line-comments": noProseLineComments,
 		"notes-are-asides": notesAreAsides,
@@ -140,6 +143,9 @@ const SVELTE_FILES: string[] = ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js
 /** Astro writes pages, layouts and components in one. */
 const ASTRO_FILES: string[] = ["**/*.astro"];
 
+/** HTML writes standalone markup pages. */
+const HTML_FILES: string[] = ["**/*.html"];
+
 /**
  * The packages a project installs only when it writes in the framework they serve.
  * Each is a value rather than something written inline, so nothing resolves it until a project turns that option on.
@@ -151,6 +157,9 @@ const ASTRO_PLUGIN = "eslint-plugin-astro";
 
 /** The astro parser, which is what reads a page's frontmatter and its markup as one file. */
 const ASTRO_PARSER = "astro-eslint-parser";
+
+/** The HTML parser, which reads tags and attributes in .html files. */
+const HTML_PARSER = "@html-eslint/parser";
 
 /** A function longer than a glance is documented; shorter ones read as prose. */
 const GLANCEABLE_LINES = 4;
@@ -294,6 +303,7 @@ function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
 		"dryer/types-directory": "warn",
 		"dryer/switch-break": "error",
 		"dryer/no-array-chain": "error",
+		"dryer/no-bare-divs": "error",
 		"dryer/logical-classes": "error",
 		"dryer/natural-size": ["error", {allowMaxInline: options.allowMaxInline ?? true}],
 		"dryer/no-inline-sql": options.sql === true ? "error" : "off",
@@ -323,7 +333,7 @@ async function buildSvelteLayers(options: DryerLintOptions, houseRules: Linter.R
 					svelteConfig: options.svelteConfig
 				}
 			},
-			rules: {...houseRules, "dryer/unbroken-sentences": "error"}
+			rules: {...houseRules, "dryer/unbroken-sentences": "error", "dryer/no-bare-divs": "error"}
 		}
 	];
 }
@@ -349,7 +359,25 @@ async function buildAstroLayers(houseRules: Linter.RulesRecord): Promise<Linter.
 					extraFileExtensions: [".astro"]
 				}
 			},
-			rules: {...houseRules, "dryer/unbroken-sentences": "error"}
+			rules: {...houseRules, "dryer/unbroken-sentences": "error", "dryer/no-bare-divs": "error"}
+		}
+	];
+}
+
+/**
+ * Builds the HTML layers, loading the HTML parser only for a project that has HTML markup files.
+ * @returns The layers to add, or none when the project has no HTML in it
+ */
+async function buildHtmlLayers(): Promise<Linter.Config[]> {
+	const htmlParser = await loadOptional<Linter.Parser>(HTML_PARSER);
+
+	return [
+		{
+			files: HTML_FILES,
+			languageOptions: {
+				parser: htmlParser
+			},
+			rules: {"dryer/no-bare-divs": "error"}
 		}
 	];
 }
@@ -366,6 +394,7 @@ export async function dryerLint(options: DryerLintOptions = {}): Promise<Linter.
 	const typed = options.typed ?? false;
 	const svelteLayers = options.svelte === true ? await buildSvelteLayers(options, houseRules) : [];
 	const astroLayers = options.astro === true ? await buildAstroLayers(houseRules) : [];
+	const htmlLayers = options.html === true ? await buildHtmlLayers() : [];
 	const documented: Linter.Config[] =
 		options.documentation === false
 			? []
@@ -388,7 +417,7 @@ export async function dryerLint(options: DryerLintOptions = {}): Promise<Linter.
 			: [
 					{
 						files: ["**/*.ts"],
-						ignores: [...SVELTE_FILES, ...ASTRO_FILES],
+						ignores: [...SVELTE_FILES, ...ASTRO_FILES, ...HTML_FILES],
 						languageOptions: {
 							parserOptions: {
 								projectService: true,
@@ -407,6 +436,7 @@ export async function dryerLint(options: DryerLintOptions = {}): Promise<Linter.
 			prettier,
 			...svelteLayers,
 			...astroLayers,
+			...htmlLayers,
 			{
 				plugins: {dryer: plugin, jsdoc},
 				settings: {jsdoc: {mode: "typescript"}},

@@ -5,7 +5,7 @@
  * Let the loop run to its natural end, or express the exit with an array method like `find` or `some`.
  */
 import type {Rule} from "eslint";
-import {readNode} from "../../lib/nodes.ts";
+import {readNode} from "#lib/nodes.ts";
 
 /** The loop statements that a break jumps out of when it is not inside a switch. */
 const LOOP_NODES: Set<string> = new Set(["ForStatement", "ForInStatement", "ForOfStatement", "WhileStatement", "DoWhileStatement"]);

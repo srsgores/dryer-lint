@@ -4,8 +4,8 @@
  * What is left is the house's own: colours that belong to the theme, lengths that follow the reader, and boxes that take their content's size.
  */
 import type {Config} from "stylelint";
-import naturalSize from "./plugins/natural-size.ts";
-import noPixelClasses from "./plugins/no-pixel-classes.ts";
+import naturalSize from "#stylelint/plugins/natural-size.ts";
+import noPixelClasses from "#stylelint/plugins/no-pixel-classes.ts";
 
 /** What is not ours to style: build output and vendored component css. */
 export const DEFAULT_IGNORE_FILES: string[] = [

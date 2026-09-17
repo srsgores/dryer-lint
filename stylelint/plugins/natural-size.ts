@@ -14,8 +14,8 @@ import {
 	describeNaturalSize,
 	isFixedDeclaration,
 	splitClassNames
-} from "../../lib/classes.ts";
-import type {NaturalSizeSecondary} from "../../lib/types/stylelint.ts";
+} from "#lib/classes.ts";
+import type {NaturalSizeSecondary} from "#lib/types/stylelint.ts";
 
 /** What this rule is called wherever stylelint names it. */
 export const ruleName = "dryer/natural-size";

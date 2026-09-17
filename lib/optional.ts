@@ -4,7 +4,7 @@
  * A project with no svelte in it would then be told to install svelte before it could type check its own lint config.
  * So the name travels as a value, and the one place it is read is here.
  */
-import {readNode} from "./nodes.ts";
+import {readNode} from "#lib/nodes.ts";
 
 /** What node says when the package is simply not installed, as against broken. */
 const MISSING_MODULE: Set<string> = new Set(["ERR_MODULE_NOT_FOUND", "MODULE_NOT_FOUND"]);

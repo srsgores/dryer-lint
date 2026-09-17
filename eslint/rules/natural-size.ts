@@ -5,9 +5,9 @@
  * The inline axis answers to the same rule, apart from a reading cap, which bounds a column of text rather than sizing a box.
  */
 import type {Rule} from "eslint";
-import {createClassVisitor} from "../../lib/class-visitor.ts";
-import {describeNaturalSize} from "../../lib/classes.ts";
-import type {NaturalSizeOptions} from "../../lib/types/natural-size.ts";
+import {createClassVisitor} from "#lib/class-visitor.ts";
+import {describeNaturalSize} from "#lib/classes.ts";
+import type {NaturalSizeOptions} from "#lib/types/natural-size.ts";
 
 /** Lets content decide how big it is, on both axes. */
 const rule: Rule.RuleModule = {

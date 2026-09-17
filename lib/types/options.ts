@@ -1,5 +1,5 @@
 /** What a project is allowed to say about itself when it asks for the house rules. */
-import type {AliasTarget} from "./aliases.ts";
+import type {AliasTarget} from "#lib/types/aliases.ts";
 
 /** Where the compiler should look for the tsconfig that answers questions about types. */
 export interface TypedOptions {
@@ -12,6 +12,8 @@ export interface DryerLintOptions {
 	svelte?: boolean;
 	/** Whether the project has astro pages, which need their own parser and plugin. */
 	astro?: boolean;
+	/** Whether the project has html files, which need their own parser. */
+	html?: boolean;
 	/** Whether the compiler is available to answer questions about types, and where its tsconfig sits. */
 	typed?: boolean | TypedOptions;
 	/** Whether the code documents itself in JSDoc, which is on unless it is turned off. */

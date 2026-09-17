@@ -4,7 +4,7 @@
  * Fold the steps into one `flatMap` or `reduce` so the list is read once and the result is built in place.
  */
 import type {Rule} from "eslint";
-import {readNode} from "../../lib/nodes.ts";
+import {readNode} from "#lib/nodes.ts";
 
 /** Array methods that walk every element, so chaining two of them is two passes. */
 const WALKING_METHODS: Set<string> = new Set(["map", "filter", "flatMap", "reduce", "reduceRight", "forEach"]);

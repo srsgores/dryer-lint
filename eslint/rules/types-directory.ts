@@ -5,7 +5,7 @@
  * A component's own `Props` is the exception, since it describes this one component and nothing else can share it.
  */
 import type {Rule} from "eslint";
-import {readNode} from "../../lib/nodes.ts";
+import {readNode} from "#lib/nodes.ts";
 
 /** A backslash, which is how Windows writes the separator between one directory and the next. */
 const WINDOWS_SEPARATOR: RegExp = /\\/g;
