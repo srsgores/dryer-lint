@@ -60,9 +60,9 @@ test("the house config reads svelte, astro and typescript in one run", async fun
 	assert.ok(reported("Card.svelte", "dryer/logical-classes", "mt-4 is a physical property; use mbs-4"));
 	assert.ok(reported("Card.svelte", "dryer/natural-size", "size-6 sets a physical width and height"));
 	assert.ok(reported("Card.svelte", "dryer/unbroken-sentences", "This sentence runs onto the next line"));
-	assert.ok(reported("page.astro", "dryer/logical-classes", "mb-4 is a physical property; use mbe-4"));
-	assert.ok(reported("page.astro", "dryer/logical-classes", "text-left is a physical alignment; use text-start"));
-	assert.ok(reported("page.astro", "dryer/natural-size", "h-64 pins an element to a fixed block size"));
+	assert.ok(reported("pages/page.astro", "dryer/logical-classes", "mb-4 is a physical property; use mbe-4"));
+	assert.ok(reported("pages/page.astro", "dryer/logical-classes", "text-left is a physical alignment; use text-start"));
+	assert.ok(reported("pages/page.astro", "dryer/natural-size", "h-64 pins an element to a fixed block size"));
 	assert.ok(reported("module.ts", "dryer/one-return", "This returns before the end of the function"));
 	assert.ok(reported("arrow.ts", "dryer/named-functions", "This arrow function never uses `this`"));
 });
@@ -70,7 +70,7 @@ test("the house config reads svelte, astro and typescript in one run", async fun
 test("an astro page may redirect from its frontmatter without answering twice", async function checksFrontmatterReturn(): Promise<void> {
 	const said = await lintFixtures();
 	const complained = said.some(function isAboutReturns(one): boolean {
-		return one.file === "page.astro" && one.rule === "dryer/one-return";
+		return one.file === "pages/page.astro" && one.rule === "dryer/one-return";
 	});
 
 	assert.equal(complained, false);

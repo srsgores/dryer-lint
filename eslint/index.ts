@@ -18,16 +18,22 @@ import type {DryerLintOptions} from "#lib/types/options.ts";
 import type {AstroPlugin, SveltePlugin} from "#lib/types/optional-peers.ts";
 import aliasedImports from "#eslint/rules/aliased-imports.ts";
 import arrayDestructuring from "#eslint/rules/array-destructuring.ts";
+import classList from "#eslint/rules/class-list.ts";
+import componentSlot from "#eslint/rules/component-slot.ts";
+import explicitFragment from "#eslint/rules/explicit-fragment.ts";
+import imageLayout from "#eslint/rules/image-layout.ts";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
 import namedFunctions from "#eslint/rules/named-functions.ts";
 import namedPatterns from "#eslint/rules/named-patterns.ts";
 import naturalSize from "#eslint/rules/natural-size.ts";
 import noArrayChain from "#eslint/rules/no-array-chain.ts";
 import noBareDivs from "#eslint/rules/no-bare-divs.ts";
+import noFrontmatterClasses from "#eslint/rules/no-frontmatter-classes.ts";
 import noInlineSql from "#eslint/rules/no-inline-sql.ts";
 import noProseLineComments from "#eslint/rules/no-prose-line-comments.ts";
 import notesAreAsides from "#eslint/rules/notes-are-asides.ts";
 import oneReturn from "#eslint/rules/one-return.ts";
+import spreadAttributes from "#eslint/rules/spread-attributes.ts";
 import switchBreak from "#eslint/rules/switch-break.ts";
 import themeColours from "#eslint/rules/theme-colours.ts";
 import typesDirectory from "#eslint/rules/types-directory.ts";
@@ -41,6 +47,10 @@ export const plugin = {
 	rules: {
 		"aliased-imports": aliasedImports,
 		"array-destructuring": arrayDestructuring,
+		"class-list": classList,
+		"component-slot": componentSlot,
+		"explicit-fragment": explicitFragment,
+		"image-layout": imageLayout,
 		"logical-classes": logicalClasses,
 		"named-functions": namedFunctions,
 		"named-patterns": namedPatterns,
@@ -48,10 +58,12 @@ export const plugin = {
 		"no-array-chain": noArrayChain,
 		"no-bare-div": noBareDivs,
 		"no-bare-divs": noBareDivs,
+		"no-frontmatter-classes": noFrontmatterClasses,
 		"no-inline-sql": noInlineSql,
 		"no-prose-line-comments": noProseLineComments,
 		"notes-are-asides": notesAreAsides,
 		"one-return": oneReturn,
+		"spread-attributes": spreadAttributes,
 		"switch-break": switchBreak,
 		"theme-colours": themeColours,
 		"types-directory": typesDirectory,
@@ -359,7 +371,17 @@ async function buildAstroLayers(houseRules: Linter.RulesRecord): Promise<Linter.
 					extraFileExtensions: [".astro"]
 				}
 			},
-			rules: {...houseRules, "dryer/unbroken-sentences": "error", "dryer/no-bare-divs": "error"}
+			rules: {
+				...houseRules,
+				"dryer/unbroken-sentences": "error",
+				"dryer/no-bare-divs": "error",
+				"dryer/component-slot": "error",
+				"dryer/spread-attributes": "error",
+				"dryer/explicit-fragment": "error",
+				"dryer/class-list": "error",
+				"dryer/image-layout": "warn",
+				"dryer/no-frontmatter-classes": "warn"
+			}
 		}
 	];
 }
