@@ -45,6 +45,19 @@ function isComponentProps(node: Rule.Node, filename: string): boolean {
 	return COMPONENT_FILE_PATTERN.test(filename.replace(WINDOWS_SEPARATOR, "/")) && declared === COMPONENT_PROPS;
 }
 
+/**
+ * Asks about one declared shape, unless it is the props of the component it stands in.
+ * @param context The rule context
+ * @param node The interface or type declaration
+ */
+function inspectDeclaration(context: Rule.RuleContext, node: unknown): void {
+	const declaration = readNode<Rule.Node>(node);
+
+	if (!isComponentProps(declaration, context.filename)) {
+		context.report({node: declaration, messageId: "typesDirectory"});
+	}
+}
+
 /** Keeps the shapes an application shares in one place, where every part of it can find them. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -64,22 +77,14 @@ const rule: Rule.RuleModule = {
 	create: function checkTypeDeclarations(context: Rule.RuleContext): Rule.RuleListener {
 		let visitors: Rule.RuleListener = {};
 
-		/**
-		 * Asks about one declared shape, unless it is the props of the component it stands in.
-		 * @param node The interface or type declaration
-		 */
-		function inspectDeclaration(node: unknown): void {
-			const declaration = readNode<Rule.Node>(node);
-
-			if (!isComponentProps(declaration, context.filename)) {
-				context.report({node: declaration, messageId: "typesDirectory"});
-			}
-		}
-
 		if (!isExemptFile(context.filename)) {
 			visitors = {
-				TSInterfaceDeclaration: inspectDeclaration,
-				TSTypeAliasDeclaration: inspectDeclaration
+				TSInterfaceDeclaration: function checkInterface(node: unknown): void {
+					inspectDeclaration(context, node);
+				},
+				TSTypeAliasDeclaration: function checkTypeAlias(node: unknown): void {
+					inspectDeclaration(context, node);
+				}
 			};
 		}
 

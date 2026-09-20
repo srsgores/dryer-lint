@@ -41,6 +41,29 @@ function wrapsOnto(line: string, next: string): boolean {
 	return Boolean(line) && Boolean(next) && !FINISHED.test(line) && !TAG.test(line) && !TAG.test(next) && !DIRECTIVE.test(next);
 }
 
+/**
+ * Reads the file's comments once, whichever kind of source it came from.
+ * @param context The rule context
+ */
+function inspectComments(context: Rule.RuleContext): void {
+	const comments = context.sourceCode.getAllComments();
+
+	for (const comment of comments) {
+		const lines = readLines(comment.value);
+
+		for (let index = 0; index < lines.length; index += 1) {
+			const line = lines.at(index) ?? "";
+			const at = {line: (comment.loc?.start.line ?? 1) + index, column: 0};
+
+			if (index + 1 < lines.length && wrapsOnto(line, lines.at(index + 1) ?? "")) {
+				context.report({loc: {start: at, end: at}, messageId: "wrapped"});
+			} else if (line.length > COMFORTABLE) {
+				context.report({loc: {start: at, end: at}, messageId: "long", data: {width: String(line.length), comfortable: String(COMFORTABLE)}});
+			}
+		}
+	}
+}
+
 /** Keeps a comment on one line, so a sentence is never read twice to find out where it went. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -59,29 +82,13 @@ const rule: Rule.RuleModule = {
 	 * @returns The visitor eslint runs over the program
 	 */
 	create: function checkComments(context: Rule.RuleContext): Rule.RuleListener {
-		/** Reads the file's comments once, whichever kind of source it came from. */
-		function inspectComments(): void {
-			const comments = context.sourceCode.getAllComments();
-
-			for (const comment of comments) {
-				const lines = readLines(comment.value);
-
-				for (let index = 0; index < lines.length; index += 1) {
-					const line = lines.at(index) ?? "";
-					const at = {line: (comment.loc?.start.line ?? 1) + index, column: 0};
-
-					if (index + 1 < lines.length && wrapsOnto(line, lines.at(index + 1) ?? "")) {
-						context.report({loc: {start: at, end: at}, messageId: "wrapped"});
-					} else if (line.length > COMFORTABLE) {
-						context.report({loc: {start: at, end: at}, messageId: "long", data: {width: String(line.length), comfortable: String(COMFORTABLE)}});
-					}
-				}
-			}
-		}
-
 		return {
-			Program: inspectComments,
-			StyleSheet: inspectComments
+			Program: function inspectProgramComments(): void {
+				inspectComments(context);
+			},
+			StyleSheet: function inspectStyleSheetComments(): void {
+				inspectComments(context);
+			}
 		};
 	}
 };

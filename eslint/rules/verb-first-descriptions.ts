@@ -59,6 +59,31 @@ function openingWord(comment: Comment): string {
 	return word;
 }
 
+/**
+ * Answers whether a line is blank or a tool directive between a comment and a function.
+ * @param line The line of code
+ * @returns True when the line can be skipped
+ */
+function isSkippableLine(line: string): boolean {
+	return line.trim() === "" || BETWEEN.test(line);
+}
+
+/**
+ * Answers whether a comment sits above a function rather than above anything else.
+ * @param lines The lines of the file
+ * @param comment The block comment
+ * @returns True when a function declaration follows it
+ */
+function documentsAFunction(lines: string[], comment: Comment): boolean {
+	let after = comment.loc?.end.line ?? 0;
+
+	while (after < lines.length && isSkippableLine(lines.at(after) ?? "")) {
+		after += 1;
+	}
+
+	return DECLARES_FUNCTION.test(lines.at(after) ?? "");
+}
+
 /** Opens a function's documentation with what it does, rather than with what it is. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -80,25 +105,6 @@ const rule: Rule.RuleModule = {
 		const source = context.sourceCode;
 		const lines = source.lines;
 
-		/**
-		 * Answers whether a comment sits above a function rather than above anything else.
-		 * @param comment The block comment
-		 * @returns True when a function declaration follows it
-		 */
-		function documentsAFunction(comment: Comment): boolean {
-			let after = comment.loc?.end.line ?? 0;
-
-			while (after < lines.length && (lines.at(after) ?? "").trim() === "") {
-				after += 1;
-			}
-
-			while (after < lines.length && BETWEEN.test(lines.at(after) ?? "")) {
-				after += 1;
-			}
-
-			return DECLARES_FUNCTION.test(lines.at(after) ?? "");
-		}
-
 		return {
 			/**
 			 * Reads every block comment in the file and asks about the ones that document a function.
@@ -106,7 +112,7 @@ const rule: Rule.RuleModule = {
 			Program: function everyBlock(): void {
 				for (const comment of source.getAllComments()) {
 					const at = comment.loc;
-					const documents = Boolean(at) && comment.type === "Block" && comment.value.startsWith("*") && documentsAFunction(comment);
+					const documents = Boolean(at) && comment.type === "Block" && comment.value.startsWith("*") && documentsAFunction(lines, comment);
 					const word = documents ? openingWord(comment) : "";
 
 					if (at && documents && SAYS_THE_RETURN.has(word)) {

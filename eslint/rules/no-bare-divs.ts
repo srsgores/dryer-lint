@@ -98,6 +98,17 @@ function targetOf(node: unknown): Rule.Node {
 	return readNode<Rule.Node>(target);
 }
 
+/**
+ * Inspects one element and reports bare divs outside `<dl>`.
+ * @param context The rule context
+ * @param node The element node
+ */
+function inspectElement(context: Rule.RuleContext, node: unknown): void {
+	if (tagNameOf(node) === "div" && countAttributes(node) === 0 && !isDirectlyInsideDl(node)) {
+		context.report({node: targetOf(node), messageId: "bareDiv"});
+	}
+}
+
 /** Forbids `<div>` elements with no attributes unless grouping terms inside a `<dl>`. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -116,31 +127,21 @@ const rule: Rule.RuleModule = {
 	 * @returns The visitor eslint runs over the program
 	 */
 	create: function checkBareDivs(context: Rule.RuleContext): Rule.RuleListener {
-		/**
-		 * Inspects one element and reports bare divs outside `<dl>`.
-		 * @param node The element node
-		 */
-		function inspect(node: unknown): void {
-			if (tagNameOf(node) === "div" && countAttributes(node) === 0 && !isDirectlyInsideDl(node)) {
-				context.report({node: targetOf(node), messageId: "bareDiv"});
-			}
-		}
-
 		return {
 			JSXElement: function checkJsx(node: unknown): void {
-				inspect(node);
+				inspectElement(context, node);
 			},
 			SvelteElement: function checkSvelte(node: unknown): void {
-				inspect(node);
+				inspectElement(context, node);
 			},
 			VElement: function checkVue(node: unknown): void {
-				inspect(node);
+				inspectElement(context, node);
 			},
 			Tag: function checkHtmlTag(node: unknown): void {
-				inspect(node);
+				inspectElement(context, node);
 			},
 			Element: function checkHtmlElement(node: unknown): void {
-				inspect(node);
+				inspectElement(context, node);
 			}
 		};
 	}

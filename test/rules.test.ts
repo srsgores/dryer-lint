@@ -16,6 +16,7 @@ import notesAreAsides from "#eslint/rules/notes-are-asides.ts";
 import oneReturn from "#eslint/rules/one-return.ts";
 import switchBreak from "#eslint/rules/switch-break.ts";
 import themeColours from "#eslint/rules/theme-colours.ts";
+import topLevelFunctions from "#eslint/rules/top-level-functions.ts";
 import typesDirectory from "#eslint/rules/types-directory.ts";
 import unwrappedComments from "#eslint/rules/unwrapped-comments.ts";
 import verbFirstDescriptions from "#eslint/rules/verb-first-descriptions.ts";
@@ -218,5 +219,40 @@ jsx.run("no-bare-divs", noBareDivs, {
 		{code: "const element = <main><div></div></main>;", errors: [{messageId: "bareDiv"}]},
 		{code: "const element = <dl><div><div></div></div></dl>;", errors: [{messageId: "bareDiv"}]},
 		{code: "const element = <dl><dt>Term</dt><dd><div></div></dd></dl>;", errors: [{messageId: "bareDiv"}]}
+	]
+});
+
+script.run("top-level-functions", topLevelFunctions, {
+	valid: [
+		"function topLevel() { return 1; }",
+		"export function exportedTopLevel() { return 1; }",
+		"export default function defaultTopLevel() { return 1; }",
+		"function run() { records.map(function toName(record) { return record.name; }); }",
+		"function init() { container.addEventListener('click', function onClick(event) { handle(); }); }",
+		"function makeStep() { return function step(x) { return x + 1; }; }",
+		"const tools = { run: function runTool() { return true; } };",
+		"(function iife() { return true; })();"
+	],
+	invalid: [
+		{
+			code: "function outer() { function inner() {} }",
+			errors: [{messageId: "nested", data: {name: "inner"}}]
+		},
+		{
+			code: "function outer() { const helper = function helper() {}; }",
+			errors: [{messageId: "nested", data: {name: "helper"}}]
+		},
+		{
+			code: "function outer() { const helper = () => {}; }",
+			errors: [{messageId: "nested", data: {name: "helper"}}]
+		},
+		{
+			code: "class Worker { work() { function subWork() {} } }",
+			errors: [{messageId: "nested", data: {name: "subWork"}}]
+		},
+		{
+			code: "function outer() { let fn; fn = function fn() {}; }",
+			errors: [{messageId: "nested", data: {name: "fn"}}]
+		}
 	]
 });

@@ -59,6 +59,52 @@ function isClimbingPath(importPath: string): boolean {
 	return segments.includes("..");
 }
 
+/**
+ * Asks about one import path, and offers the alias that reaches the same module.
+ * @param context The rule context
+ * @param aliases The configured aliases
+ * @param sourceNode The string the import names its module with
+ * @param importPath What that string says
+ */
+function inspectImportSource(context: Rule.RuleContext, aliases: AliasTarget[], sourceNode: Rule.Node, importPath: string): void {
+	const normalizedSource = context.filename.replace(WINDOWS_SEPARATOR, "/");
+	const isExempt = ROUTE_TYPES_PATTERN.test(importPath) || BOOTSTRAP_CONFIG_PATTERN.test(normalizedSource);
+
+	if (!isExempt) {
+		const replacement = findAliasReplacement(context.filename, importPath, aliases);
+
+		if (replacement) {
+			context.report({
+				node: sourceNode,
+				messageId: "useAlias",
+				data: {alias: replacement.alias, suggested: replacement.suggested},
+				fix: function applyAliasFix(fixer): Rule.Fix {
+					return fixer.replaceText(sourceNode, `"${replacement.suggested}"`);
+				}
+			});
+		} else if (isClimbingPath(importPath)) {
+			context.report({
+				node: sourceNode,
+				messageId: "noRelative"
+			});
+		}
+	}
+}
+
+/**
+ * Reads whatever module string a declaration carries, when it carries one.
+ * @param context The rule context
+ * @param aliases The configured aliases
+ * @param node The import or export declaration
+ */
+function inspectDeclaration(context: Rule.RuleContext, aliases: AliasTarget[], node: unknown): void {
+	const source = (node as {source?: {value?: unknown; type?: string}}).source;
+
+	if (source && typeof source.value === "string") {
+		inspectImportSource(context, aliases, readNode<Rule.Node>(source), source.value);
+	}
+}
+
 /** Addresses a module by the name of the place it lives, rather than by the way there from here. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -91,52 +137,16 @@ const rule: Rule.RuleModule = {
 		const [configured] = context.options as [AliasTarget[] | undefined];
 		const aliases = configured ?? DEFAULT_ALIASES;
 
-		/**
-		 * Asks about one import path, and offers the alias that reaches the same module.
-		 * @param sourceNode The string the import names its module with
-		 * @param importPath What that string says
-		 */
-		function inspectImportSource(sourceNode: Rule.Node, importPath: string): void {
-			const normalizedSource = context.filename.replace(WINDOWS_SEPARATOR, "/");
-			const isExempt = ROUTE_TYPES_PATTERN.test(importPath) || BOOTSTRAP_CONFIG_PATTERN.test(normalizedSource);
-
-			if (!isExempt) {
-				const replacement = findAliasReplacement(context.filename, importPath, aliases);
-
-				if (replacement) {
-					context.report({
-						node: sourceNode,
-						messageId: "useAlias",
-						data: {alias: replacement.alias, suggested: replacement.suggested},
-						fix: function applyAliasFix(fixer): Rule.Fix {
-							return fixer.replaceText(sourceNode, `"${replacement.suggested}"`);
-						}
-					});
-				} else if (isClimbingPath(importPath)) {
-					context.report({
-						node: sourceNode,
-						messageId: "noRelative"
-					});
-				}
-			}
-		}
-
-		/**
-		 * Reads whatever module string a declaration carries, when it carries one.
-		 * @param node The import or export declaration
-		 */
-		function inspectDeclaration(node: unknown): void {
-			const source = (node as {source?: {value?: unknown; type?: string}}).source;
-
-			if (source && typeof source.value === "string") {
-				inspectImportSource(readNode<Rule.Node>(source), source.value);
-			}
-		}
-
 		return {
-			ImportDeclaration: inspectDeclaration,
-			ExportNamedDeclaration: inspectDeclaration,
-			ExportAllDeclaration: inspectDeclaration,
+			ImportDeclaration: function checkImportDeclaration(node: unknown): void {
+				inspectDeclaration(context, aliases, node);
+			},
+			ExportNamedDeclaration: function checkExportNamedDeclaration(node: unknown): void {
+				inspectDeclaration(context, aliases, node);
+			},
+			ExportAllDeclaration: function checkExportAllDeclaration(node: unknown): void {
+				inspectDeclaration(context, aliases, node);
+			},
 			/**
 			 * Reads the module string a dynamic import names, when it names one at all.
 			 * @param node The import expression
@@ -145,7 +155,7 @@ const rule: Rule.RuleModule = {
 				const source = node.source as {type?: string; value?: unknown};
 
 				if (source.type === "Literal" && typeof source.value === "string") {
-					inspectImportSource(readNode<Rule.Node>(source), source.value);
+					inspectImportSource(context, aliases, readNode<Rule.Node>(source), source.value);
 				}
 			}
 		};

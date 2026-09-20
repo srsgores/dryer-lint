@@ -36,6 +36,7 @@ import oneReturn from "#eslint/rules/one-return.ts";
 import spreadAttributes from "#eslint/rules/spread-attributes.ts";
 import switchBreak from "#eslint/rules/switch-break.ts";
 import themeColours from "#eslint/rules/theme-colours.ts";
+import topLevelFunctions from "#eslint/rules/top-level-functions.ts";
 import typesDirectory from "#eslint/rules/types-directory.ts";
 import unbrokenSentences from "#eslint/rules/unbroken-sentences.ts";
 import unwrappedComments from "#eslint/rules/unwrapped-comments.ts";
@@ -60,12 +61,14 @@ export const plugin = {
 		"no-bare-divs": noBareDivs,
 		"no-frontmatter-classes": noFrontmatterClasses,
 		"no-inline-sql": noInlineSql,
+		"no-nested-functions": topLevelFunctions,
 		"no-prose-line-comments": noProseLineComments,
 		"notes-are-asides": notesAreAsides,
 		"one-return": oneReturn,
 		"spread-attributes": spreadAttributes,
 		"switch-break": switchBreak,
 		"theme-colours": themeColours,
+		"top-level-functions": topLevelFunctions,
 		"types-directory": typesDirectory,
 		"unbroken-sentences": unbrokenSentences,
 		"unwrapped-comments": unwrappedComments,
@@ -313,6 +316,7 @@ function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
 		"dryer/named-functions": "error",
 		"dryer/named-patterns": "error",
 		"dryer/theme-colours": "error",
+		"dryer/top-level-functions": "error",
 		"dryer/aliased-imports": ["error", options.aliases ?? DEFAULT_ALIASES],
 		"dryer/array-destructuring": "warn",
 		"dryer/types-directory": "warn",

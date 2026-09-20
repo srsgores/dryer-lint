@@ -36,6 +36,22 @@ function wrapsOnto(line: string, next: string): boolean {
 	return Boolean(line) && Boolean(next) && !FINISHED.test(line) && !PLUMBING.test(next) && !PLUMBING.test(line);
 }
 
+/**
+ * Asks about one run of shown text, wherever the template kept it.
+ * @param context The rule context
+ * @param node The text node
+ * @param written What it says
+ */
+function inspectText(context: Rule.RuleContext, node: Rule.Node, written: unknown): void {
+	const lines = readLines(typeof written === "string" ? written : "");
+
+	for (let index = 0; index < lines.length - 1; index += 1) {
+		if (wrapsOnto(lines.at(index) ?? "", lines.at(index + 1) ?? "")) {
+			context.report({node, messageId: "wrapped"});
+		}
+	}
+}
+
 /** Keeps a sentence the reader will see on one line, the way a comment is kept. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -53,27 +69,12 @@ const rule: Rule.RuleModule = {
 	 * @returns The visitor eslint runs over the program
 	 */
 	create: function checkText(context: Rule.RuleContext): Rule.RuleListener {
-		/**
-		 * Asks about one run of shown text, wherever the template kept it.
-		 * @param node The text node
-		 * @param written What it says
-		 */
-		function inspectText(node: Rule.Node, written: unknown): void {
-			const lines = readLines(typeof written === "string" ? written : "");
-
-			for (let index = 0; index < lines.length - 1; index += 1) {
-				if (wrapsOnto(lines.at(index) ?? "", lines.at(index + 1) ?? "")) {
-					context.report({node, messageId: "wrapped"});
-				}
-			}
-		}
-
 		return {
 			SvelteText: function checkSvelteText(node: unknown): void {
-				inspectText(node as Rule.Node, (node as {value?: unknown}).value);
+				inspectText(context, node as Rule.Node, (node as {value?: unknown}).value);
 			},
 			JSXText: function checkJsxText(node: unknown): void {
-				inspectText(node as Rule.Node, (node as {value?: unknown}).value);
+				inspectText(context, node as Rule.Node, (node as {value?: unknown}).value);
 			}
 		};
 	}

@@ -8,6 +8,29 @@
 import type {Rule} from "eslint";
 import type {WalkedFunction} from "#lib/types/walked-function.ts";
 
+/**
+ * Remembers a function while its body is walked.
+ * @param walked The walked function stack
+ * @param node The function
+ * @param isArrow Whether it is an arrow
+ */
+function enterFunction(walked: WalkedFunction[], node: Rule.Node, isArrow: boolean): void {
+	walked.push({node, isArrow, borrowsThis: false});
+}
+
+/**
+ * Finishes with a function, and asks about it if it was an arrow that never borrowed anything.
+ * @param walked The walked function stack
+ * @param context The rule context
+ */
+function leaveFunction(walked: WalkedFunction[], context: Rule.RuleContext): void {
+	const finished = walked.pop();
+
+	if (finished?.isArrow && !finished.borrowsThis) {
+		context.report({node: finished.node, messageId: "unnamed"});
+	}
+}
+
 /** Keeps arrows for borrowing `this`, and asks for a name everywhere else. */
 const rule: Rule.RuleModule = {
 	meta: {
@@ -28,37 +51,25 @@ const rule: Rule.RuleModule = {
 		/** The functions being walked through, innermost last, so a `this` is credited to the one it belongs to. */
 		const walked: WalkedFunction[] = [];
 
-		/**
-		 * Remembers a function while its body is walked.
-		 * @param node The function
-		 * @param isArrow Whether it is an arrow
-		 */
-		function enter(node: Rule.Node, isArrow: boolean): void {
-			walked.push({node, isArrow, borrowsThis: false});
-		}
-
-		/** Finishes with a function, and asks about it if it was an arrow that never borrowed anything. */
-		function leave(): void {
-			const finished = walked.pop();
-
-			if (finished?.isArrow && !finished.borrowsThis) {
-				context.report({node: finished.node, messageId: "unnamed"});
-			}
-		}
-
 		return {
 			ArrowFunctionExpression: function enterArrow(node): void {
-				enter(node as Rule.Node, true);
+				enterFunction(walked, node as Rule.Node, true);
 			},
-			"ArrowFunctionExpression:exit": leave,
+			"ArrowFunctionExpression:exit": function exitArrow(): void {
+				leaveFunction(walked, context);
+			},
 			FunctionDeclaration: function enterDeclaration(node): void {
-				enter(node as Rule.Node, false);
+				enterFunction(walked, node as Rule.Node, false);
 			},
-			"FunctionDeclaration:exit": leave,
+			"FunctionDeclaration:exit": function exitDeclaration(): void {
+				leaveFunction(walked, context);
+			},
 			FunctionExpression: function enterExpression(node): void {
-				enter(node as Rule.Node, false);
+				enterFunction(walked, node as Rule.Node, false);
 			},
-			"FunctionExpression:exit": leave,
+			"FunctionExpression:exit": function exitExpression(): void {
+				leaveFunction(walked, context);
+			},
 			/*
 			 * A `this` belongs to the nearest function that binds one, and an arrow binds none.
 			 * So every arrow up to and including the first non-arrow has borrowed it.

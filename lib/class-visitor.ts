@@ -48,32 +48,33 @@ function directiveNameOf(written: WrittenName): string {
 }
 
 /**
+ * Hands every class in one string to the reporter.
+ * @param report The reporter, called with each class and the node it was written on
+ * @param text The string as it was written
+ * @param node The node the string belongs to
+ */
+function inspect(report: ClassReporter, text: unknown, node: ClassStringNode): void {
+	const isClassList = typeof text === "string" && !NOT_CLASSES.has(attributeNameOf(node));
+
+	if (isClassList) {
+		for (const token of splitClassNames(text as string)) {
+			report(token, readNode<Rule.Node>(node));
+		}
+	}
+}
+
+/**
  * Builds the visitor both class rules run, which hands every class in a file to one reporter.
  * @param report The reporter, called with each class and the node it was written on
  * @returns The visitor eslint runs over the program
  */
 export function createClassVisitor(report: ClassReporter): Rule.RuleListener {
-	/**
-	 * Hands every class in one string to the reporter.
-	 * @param text The string as it was written
-	 * @param node The node the string belongs to
-	 */
-	function inspect(text: unknown, node: ClassStringNode): void {
-		const isClassList = typeof text === "string" && !NOT_CLASSES.has(attributeNameOf(node));
-
-		if (isClassList) {
-			for (const token of splitClassNames(text as string)) {
-				report(token, readNode<Rule.Node>(node));
-			}
-		}
-	}
-
 	return {
 		Literal: function readLiteral(node): void {
-			inspect(node.value, readNode<ClassStringNode>(node));
+			inspect(report, node.value, readNode<ClassStringNode>(node));
 		},
 		TemplateElement: function readTemplatePart(node): void {
-			inspect(node.value.cooked ?? node.value.raw, readNode<ClassStringNode>(node));
+			inspect(report, node.value.cooked ?? node.value.raw, readNode<ClassStringNode>(node));
 		},
 		/**
 		 * Reads a svelte attribute's text, which the parser keeps in a node of its own.
@@ -82,7 +83,7 @@ export function createClassVisitor(report: ClassReporter): Rule.RuleListener {
 		SvelteLiteral: function readSvelteLiteral(node: unknown): void {
 			const literal = node as ClassStringNode;
 
-			inspect(literal.value, literal);
+			inspect(report, literal.value, literal);
 		},
 		/**
 		 * Reads a `class:` directive, whose name is the class it applies.
