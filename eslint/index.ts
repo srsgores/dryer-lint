@@ -5,7 +5,7 @@
  * Everything else about style is prettier's.
  */
 import js from "@eslint/js";
-import type {Linter} from "eslint";
+import type {ESLint, Linter} from "eslint";
 import {defineConfig, globalIgnores} from "eslint/config";
 import prettier from "eslint-config-prettier";
 import jsdoc from "eslint-plugin-jsdoc";
@@ -179,6 +179,9 @@ const ASTRO_PARSER = "astro-eslint-parser";
 /** The HTML parser, which reads tags and attributes in .html files. */
 const HTML_PARSER = "@html-eslint/parser";
 
+/** Canonical Tailwind class names, which the house asks for so `eslint --fix` can rewrite them. */
+const CANONICAL_PLUGIN = "eslint-plugin-tailwind-canonical-classes";
+
 /** A function longer than a glance is documented; shorter ones read as prose. */
 const GLANCEABLE_LINES = 4;
 
@@ -326,7 +329,8 @@ function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
 		"dryer/logical-classes": "error",
 		"dryer/natural-size": ["error", {allowMaxInline: options.allowMaxInline ?? true}],
 		"dryer/no-inline-sql": options.sql === true ? "error" : "off",
-		...MAGIC_NUMBERS
+		...MAGIC_NUMBERS,
+		...(options.cssPath === undefined ? {} : {"tailwind-canonical-classes/tailwind-canonical-classes": ["error", {cssPath: options.cssPath}]})
 	};
 }
 
@@ -421,6 +425,7 @@ export async function dryerLint(options: DryerLintOptions = {}): Promise<Linter.
 	const testFiles = options.testFiles ?? DEFAULT_TEST_FILES;
 	const houseRules = buildHouseRules(options);
 	const typed = options.typed ?? false;
+	const canonical = options.cssPath === undefined ? undefined : await loadOptional<ESLint.Plugin>(CANONICAL_PLUGIN);
 	const svelteLayers = options.svelte === true ? await buildSvelteLayers(options, houseRules) : [];
 	const astroLayers = options.astro === true ? await buildAstroLayers(houseRules) : [];
 	const htmlLayers = options.html === true ? await buildHtmlLayers() : [];
@@ -467,7 +472,7 @@ export async function dryerLint(options: DryerLintOptions = {}): Promise<Linter.
 			...astroLayers,
 			...htmlLayers,
 			{
-				plugins: {dryer: plugin, jsdoc},
+				plugins: canonical === undefined ? {dryer: plugin, jsdoc} : {dryer: plugin, jsdoc, "tailwind-canonical-classes": canonical},
 				settings: {jsdoc: {mode: "typescript"}},
 				languageOptions: {globals: {...globals.browser, ...globals.node}},
 				rules: {"no-undef": "off"}

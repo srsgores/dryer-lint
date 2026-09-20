@@ -173,3 +173,25 @@ test("typed layers ignore framework virtual script blocks so typescript project 
 	});
 	assert.equal(caughtOneReturn, true);
 });
+
+test("canonical classes stay off until a stylesheet is named", async function checksCanonicalIsOptIn(): Promise<void> {
+	const configuration = await dryerLint({documentation: false});
+	const house = configuration.find(function hasHouseRules(one): boolean {
+		return one.rules?.["dryer/one-return"] === "error";
+	});
+
+	assert.equal(house?.rules?.["tailwind-canonical-classes/tailwind-canonical-classes"], undefined);
+});
+
+test("eslint --fix rewrites a non-canonical tailwind class", async function checksCanonicalFix(): Promise<void> {
+	const cssPath = join(FIXTURES, "app.css");
+	const configuration = await dryerLint({svelte: true, documentation: false, cssPath});
+	const eslint = new ESLint({
+		overrideConfigFile: true,
+		overrideConfig: configuration as Linter.Config[],
+		fix: true
+	});
+	const [linted] = await eslint.lintText('<div class="p-[16px]"></div>\n', {filePath: "Card.svelte"});
+
+	assert.equal(linted.output, '<div class="p-4"></div>\n');
+});

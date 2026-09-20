@@ -32,6 +32,8 @@ export interface DryerLintOptions {
 	noNull?: boolean;
 	/** Whether a cap on the inline axis is left alone, which it is unless asked otherwise. */
 	allowMaxInline?: boolean;
+	/** The project's Tailwind entry stylesheet. Turns on canonical class names, which `eslint --fix` rewrites. */
+	cssPath?: string;
 	/** The files the house rules apply to. */
 	files?: string[];
 	/** The files that are tests, which are held to the same style but not to the same names. */

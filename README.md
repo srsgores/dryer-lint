@@ -24,6 +24,7 @@ Optional peers, only for the frameworks you write in:
 npm i -D eslint-plugin-svelte svelte-eslint-parser prettier-plugin-svelte
 npm i -D eslint-plugin-astro astro-eslint-parser prettier-plugin-astro
 npm i -D @html-eslint/parser
+npm i -D eslint-plugin-tailwind-canonical-classes
 ```
 
 ## Running it: this package ships TypeScript, not JavaScript
@@ -48,7 +49,7 @@ Node strips types from `.ts` files on its own from 22.18 onwards, **except for f
 ```ts
 import {dryerLint} from "dryer-lint/eslint";
 
-export default await dryerLint({svelte: true});
+export default await dryerLint({svelte: true, cssPath: "./src/app.css"});
 ```
 
 `dryerLint()` is async, because it loads the svelte and astro packages only when you ask for them, and it names them through a value rather than inline so that nothing — not the runtime, and not `tsc` walking into this package from your `eslint.config.ts` — goes looking for a package you never asked for. A project with no svelte in it never needs the svelte packages installed. Turn an option on without its packages and you get a plain sentence saying which one to install, rather than a module resolution stack trace.
@@ -73,6 +74,7 @@ Every one of them is optional.
 | `sql`            | `false`                                            | Turns on `dryer/no-inline-sql`.                                                                                                                                                                                                                                                                                |
 | `noNull`         | `false`                                            | Forbids typing anything as `null`.                                                                                                                                                                                                                                                                             |
 | `allowMaxInline` | `true`                                             | Whether a cap on the inline axis (`max-w-*`, `max-inline-*`) is left alone. See the sizing section.                                                                                                                                                                                                            |
+| `cssPath`        | none                                               | The project's Tailwind entry stylesheet (`@import "tailwindcss"`). Turns on `tailwind-canonical-classes`, which is fixable, so `eslint --fix` rewrites `p-[16px]` to `p-4`.                                                                                                                                    |
 | `files`          | `["**/*.{js,mjs,cjs,ts,mts}"]`                     | The files the house rules apply to.                                                                                                                                                                                                                                                                            |
 | `testFiles`      | `["**/*.test.ts", "**/tests/**", "acceptance/**"]` | Files held to the same style, but not to the same names: magic numbers, `any` and the denylist are relaxed.                                                                                                                                                                                                    |
 | `svelteConfig`   | none                                               | Your `svelte.config.js`, handed to the svelte parser so it reads the compiler's own settings.                                                                                                                                                                                                                  |
@@ -134,6 +136,8 @@ Everything below is in the `dryer` namespace.
 | `natural-size`            | A box takes the size its content asks for. See below.                                                                                                                                                                                        |
 
 On top of those, the house config sets `id-denylist` (the two projects' vague-name lists put together), `id-length` at 2 with properties exempt, `func-style: declaration`, `func-names: always`, `@typescript-eslint/no-magic-numbers` with `-1`, `0`, `1` and `2` allowed, and `no-restricted-syntax` for promise `.then`/`.catch`/`.finally` chains, `new Promise`, `continue`, casting through `unknown`, and functions named `handleX` or `onX` after what they respond to rather than what they do.
+
+When `cssPath` is set, `tailwind-canonical-classes/tailwind-canonical-classes` is on as well. It is not in the `dryer` namespace, because it is somebody else's rule; it is the one that makes `eslint --fix` rewrite a class into the name Tailwind itself would have chosen. It reads a Svelte `class`, a JSX `className`, and the string arguments to `cn` and `clsx`; an Astro `class` is not among those.
 
 ### Hardened natural sizing
 
