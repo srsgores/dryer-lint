@@ -158,6 +158,9 @@ const ASTRO_FILES: string[] = ["**/*.astro"];
 /** HTML writes standalone markup pages. */
 const HTML_FILES: string[] = ["**/*.html"];
 
+/** Virtual script blocks preprocessors extract from markup, which typescript's project service does not know. */
+const FRAMEWORK_VIRTUAL_FILES: string[] = ["**/*.astro/*", "**/*.svelte/*"];
+
 /**
  * The packages a project installs only when it writes in the framework they serve.
  * Each is a value rather than something written inline, so nothing resolves it until a project turns that option on.
@@ -439,7 +442,7 @@ export async function dryerLint(options: DryerLintOptions = {}): Promise<Linter.
 			: [
 					{
 						files: ["**/*.ts"],
-						ignores: [...SVELTE_FILES, ...ASTRO_FILES, ...HTML_FILES],
+						ignores: [...SVELTE_FILES, ...ASTRO_FILES, ...HTML_FILES, ...FRAMEWORK_VIRTUAL_FILES],
 						languageOptions: {
 							parserOptions: {
 								projectService: true,

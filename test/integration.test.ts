@@ -136,3 +136,39 @@ test("the HTML layer reports bare divs and leaves dl groups alone", async functi
 		false
 	);
 });
+
+test("typed layers ignore framework virtual script blocks so typescript project service skips them", async function checksFrameworkVirtualIgnores(): Promise<void> {
+	const configuration = await dryerLint({astro: true, typed: true});
+	const typedConfig = configuration.find(function isTypedLayer(one): boolean {
+		const parserOptions = one.languageOptions?.parserOptions as {projectService?: boolean} | undefined;
+		return parserOptions?.projectService === true;
+	});
+
+	assert.ok(typedConfig?.ignores?.includes("**/*.astro"));
+	assert.ok(typedConfig?.ignores?.includes("**/*.astro/*"));
+	assert.ok(typedConfig?.ignores?.includes("**/*.svelte/*"));
+
+	const eslint = new ESLint({
+		overrideConfigFile: true,
+		overrideConfig: configuration as Linter.Config[]
+	});
+
+	/**
+	 * An Astro page with an early return in a client script:
+	 * Without the fix, this fails to parse and reports 0 script errors.
+	 * With the fix, projectService is skipped and dryer/one-return speaks.
+	 */
+	const [linted] = await eslint.lintText("<script>\nfunction test(val: number): void {\n  if (val < 0) return;\n  return;\n}\n</script>\n", {
+		filePath: "src/pages/sample.astro"
+	});
+
+	const projectServiceError = linted.messages.some(function isProjectServiceError(lintedMessage): boolean {
+		return lintedMessage.ruleId === null && lintedMessage.message.includes("project service");
+	});
+	assert.equal(projectServiceError, false);
+
+	const caughtOneReturn = linted.messages.some(function isOneReturn(lintedMessage): boolean {
+		return lintedMessage.ruleId === "dryer/one-return";
+	});
+	assert.equal(caughtOneReturn, true);
+});
