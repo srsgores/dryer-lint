@@ -7,14 +7,7 @@
 import stylelint from "stylelint";
 import type {PostcssResult} from "stylelint";
 import type {AtRule, Declaration, Root} from "postcss";
-import {
-	BLOCK_SIZE_PROPERTIES,
-	CAPPED_INLINE_PROPERTIES,
-	INLINE_SIZE_PROPERTIES,
-	describeNaturalSize,
-	isFixedDeclaration,
-	splitClassNames
-} from "#lib/classes.ts";
+import {describeNaturalSize, describePinnedDeclaration, sizedAxisOf, splitClassNames} from "#lib/classes.ts";
 import type {NaturalSizeSecondary} from "#lib/types/stylelint.ts";
 
 /** What this rule is called wherever stylelint names it. */
@@ -34,25 +27,6 @@ export const messages = stylelint.utils.ruleMessages(ruleName, {
 const meta = {url: "https://github.com/srsgores/dryer-lint#dryernatural-size"};
 
 /**
- * Names the axis a declaration sizes, once the project has said whether a reading cap counts.
- * @param property The property being declared
- * @param allowMaxInline Whether a reading cap on the inline axis is left alone
- * @returns The axis, or an empty string when the declaration sizes nothing
- */
-function sizedAxisOf(property: string, allowMaxInline: boolean): string {
-	const capped = !allowMaxInline && CAPPED_INLINE_PROPERTIES.has(property);
-	let axis = "";
-
-	if (BLOCK_SIZE_PROPERTIES.has(property)) {
-		axis = "block";
-	} else if (INLINE_SIZE_PROPERTIES.has(property) || capped) {
-		axis = "inline";
-	}
-
-	return axis;
-}
-
-/**
  * Reads every stylesheet handed to stylelint and asks about the boxes that were sized in advance.
  * @param primary Whether the rule is turned on
  * @param secondary What the project said about reading caps
@@ -64,9 +38,9 @@ function checkNaturalSize(primary: boolean, secondary?: NaturalSizeSecondary): (
 
 		if (primary) {
 			root.walkDecls(function readDeclaration(declaration: Declaration): void {
-				const axis = sizedAxisOf(declaration.prop.toLowerCase(), allowMaxInline);
+				const axis = sizedAxisOf(declaration.prop, allowMaxInline);
 
-				if (axis !== "" && isFixedDeclaration(declaration.value)) {
+				if (axis !== "" && describePinnedDeclaration(declaration.prop, declaration.value, allowMaxInline) !== "") {
 					stylelint.utils.report({
 						message: messages.pinned(declaration.prop, axis),
 						node: declaration,

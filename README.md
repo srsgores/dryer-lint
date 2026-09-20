@@ -159,7 +159,7 @@ What stays allowed:
 
 `max-w-*` and `max-inline-*` stay allowed by default, because a reading measure bounds a column of text rather than sizing a box. Pass `allowMaxInline: false` to forbid those as well. Note that the block-axis caps, `max-h-*` and `max-block-*`, are **not** exempt: a cap on the block axis is still a guess at how much content there will be.
 
-The same rule is enforced on stylesheets by `dryer/natural-size` on the stylelint side, on declarations and inside `@apply`.
+The same rule is enforced on stylesheets by `dryer/natural-size` on the stylelint side, on declarations and inside `@apply`, and on `style` attributes (and Svelte `style:` directives) by the eslint rule.
 
 ## stylelint
 

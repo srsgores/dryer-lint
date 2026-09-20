@@ -200,6 +200,23 @@ const jsx = new RuleTester({
 	}
 });
 
+jsx.run("natural-size in style attributes", naturalSize, {
+	valid: [
+		{code: 'const element = <div style="inline-size: 100%; block-size: 50dvh;"></div>;'},
+		{code: 'const element = <div style={{inlineSize: "100%", blockSize: "50dvh"}}></div>;'}
+	],
+	invalid: [
+		{
+			code: 'const element = <div style="inline-size: 2.25rem; block-size: 2.25rem;"></div>;',
+			errors: [{messageId: "pinned"}, {messageId: "pinned"}]
+		},
+		{
+			code: 'const element = <div style={{inlineSize: "2.25rem", blockSize: "2.25rem"}}></div>;',
+			errors: [{messageId: "pinned"}, {messageId: "pinned"}]
+		}
+	]
+});
+
 jsx.run("no-bare-divs", noBareDivs, {
 	valid: [
 		{code: 'const element = <div className="card"></div>;'},

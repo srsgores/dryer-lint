@@ -147,6 +147,9 @@ const FIXED_LENGTH_VALUE: RegExp = /^[\d.]+(?:px|rem|em|ch|ex|pt|pc|cm|mm|in|q)$
 /** A spacing step asked for in a stylesheet, which is a fixed length spelled differently. */
 const SPACING_CALL: RegExp = /^--spacing\(\s*[\d.]+\s*\)$/;
 
+/** A capital letter in a camelCase key, which becomes a hyphen in the CSS property. */
+const CAMEL_HUMP: RegExp = /[A-Z]/g;
+
 /** Declarations that size a box on the block axis, caps included. */
 export const BLOCK_SIZE_PROPERTIES: Set<string> = new Set(["height", "block-size", "min-height", "min-block-size", "max-height", "max-block-size"]);
 
@@ -335,4 +338,77 @@ export function isFixedDeclaration(written: string): boolean {
 	const trimmed = written.trim();
 
 	return FIXED_LENGTH_VALUE.test(trimmed) || SPACING_CALL.test(trimmed);
+}
+
+/**
+ * Names the axis a declaration sizes, once the project has said whether a reading cap counts.
+ * @param property The property being declared
+ * @param allowMaxInline Whether a reading cap on the inline axis is left alone
+ * @returns The axis, or an empty string when the declaration sizes nothing of interest
+ */
+export function sizedAxisOf(property: string, allowMaxInline: boolean): string {
+	const name = property.toLowerCase();
+	const capped = !allowMaxInline && CAPPED_INLINE_PROPERTIES.has(name);
+	let axis = "";
+
+	if (BLOCK_SIZE_PROPERTIES.has(name)) {
+		axis = "block";
+	} else if (INLINE_SIZE_PROPERTIES.has(name) || capped) {
+		axis = "inline";
+	}
+
+	return axis;
+}
+
+/**
+ * Turns a camelCase style key into the CSS property it names.
+ * @param written The key as JavaScript wrote it
+ * @returns The kebab-case property
+ */
+export function cssPropertyOf(written: string): string {
+	return written.replace(CAMEL_HUMP, function toKebab(letter: string): string {
+		return `-${letter.toLowerCase()}`;
+	});
+}
+
+/**
+ * Splits an inline style string into the declarations it holds.
+ * @param style The attribute value as it was written
+ * @returns Every property and value, in the order they were written
+ */
+export function declarationsOf(style: string): {property: string; value: string}[] {
+	const found: {property: string; value: string}[] = [];
+
+	for (const chunk of style.split(";")) {
+		const colon = chunk.indexOf(":");
+
+		if (colon !== -1) {
+			const property = chunk.slice(0, colon).trim();
+			const value = chunk.slice(colon + 1).trim();
+
+			if (property !== "" && value !== "") {
+				found.push({property, value});
+			}
+		}
+	}
+
+	return found;
+}
+
+/**
+ * Names what a declaration does to a box that the box should have decided for itself.
+ * @param property The property as it was written
+ * @param value The value as it was written
+ * @param allowMaxInline Whether a reading cap on the inline axis is left alone
+ * @returns What is wrong with it, or an empty string when nothing is
+ */
+export function describePinnedDeclaration(property: string, value: string, allowMaxInline: boolean): string {
+	const axis = sizedAxisOf(property, allowMaxInline);
+	let message = "";
+
+	if (axis !== "" && isFixedDeclaration(value)) {
+		message = `${property} pins an element to a fixed ${axis} size; let it take its natural size, or bound it with a viewport unit or a measured custom property`;
+	}
+
+	return message;
 }

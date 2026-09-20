@@ -2,7 +2,7 @@
 import {describe, it} from "node:test";
 import {RuleTester} from "eslint";
 import htmlParser from "@html-eslint/parser";
-import astroParser from "astro-eslint-parser";
+import * as astroParser from "astro-eslint-parser";
 import svelteParser from "svelte-eslint-parser";
 import tseslint from "typescript-eslint";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
@@ -49,10 +49,38 @@ svelte.run("logical-classes in svelte", logicalClasses, {
 });
 
 svelte.run("natural-size in svelte", naturalSize, {
-	valid: [{filename: "Card.svelte", code: '<div class="block-full inline-full max-inline-prose"></div>'}],
+	valid: [
+		{filename: "Card.svelte", code: '<div class="block-full inline-full max-inline-prose"></div>'},
+		{filename: "Card.svelte", code: '<div style="inline-size: 100%; block-size: 50dvh;"></div>'}
+	],
 	invalid: [
 		{filename: "Card.svelte", code: '<div class="h-64"></div>', errors: [{messageId: "pinned"}]},
-		{filename: "Card.svelte", code: '<img class="size-6" alt="" />', errors: [{messageId: "pinned"}]}
+		{filename: "Card.svelte", code: '<img class="size-6" alt="" />', errors: [{messageId: "pinned"}]},
+		{
+			filename: "Card.svelte",
+			code: '<div style="inline-size: 2.25rem; block-size: 2.25rem;"></div>',
+			errors: [
+				{
+					messageId: "pinned",
+					data: {
+						explanation:
+							"inline-size pins an element to a fixed inline size; let it take its natural size, or bound it with a viewport unit or a measured custom property"
+					}
+				},
+				{
+					messageId: "pinned",
+					data: {
+						explanation:
+							"block-size pins an element to a fixed block size; let it take its natural size, or bound it with a viewport unit or a measured custom property"
+					}
+				}
+			]
+		},
+		{
+			filename: "Card.svelte",
+			code: '<div style:inline-size="2.25rem" style:block-size="2.25rem"></div>',
+			errors: [{messageId: "pinned"}, {messageId: "pinned"}]
+		}
 	]
 });
 
@@ -80,7 +108,14 @@ astro.run("logical-classes in astro", logicalClasses, {
 
 astro.run("natural-size in astro", naturalSize, {
 	valid: [{filename: "index.astro", code: '---\n---\n<div class="block-full inline-1/2"></div>'}],
-	invalid: [{filename: "index.astro", code: '---\n---\n<div class="max-h-[400px]"></div>', errors: [{messageId: "pinned"}]}]
+	invalid: [
+		{filename: "index.astro", code: '---\n---\n<div class="max-h-[400px]"></div>', errors: [{messageId: "pinned"}]},
+		{
+			filename: "index.astro",
+			code: '---\n---\n<div style="inline-size: 2.25rem; block-size: 2.25rem;"></div>',
+			errors: [{messageId: "pinned"}, {messageId: "pinned"}]
+		}
+	]
 });
 
 astro.run("unbroken-sentences in astro", unbrokenSentences, {
