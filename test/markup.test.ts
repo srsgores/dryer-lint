@@ -6,6 +6,7 @@ import * as astroParser from "astro-eslint-parser";
 import svelteParser from "svelte-eslint-parser";
 import tseslint from "typescript-eslint";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
+import headingGroup from "#eslint/rules/heading-group.ts";
 import naturalSize from "#eslint/rules/natural-size.ts";
 import noBareDivs from "#eslint/rules/no-bare-divs.ts";
 import typesDirectory from "#eslint/rules/types-directory.ts";
@@ -202,5 +203,63 @@ html.run("no-bare-divs in html", noBareDivs, {
 		{filename: "index.html", code: "<main><div></div></main>", errors: [{messageId: "bareDiv"}]},
 		{filename: "index.html", code: "<dl><dt>Term</dt><dd><div></div></dd></dl>", errors: [{messageId: "bareDiv"}]},
 		{filename: "index.html", code: "<dl><div><div></div></div></dl>", errors: [{messageId: "bareDiv"}]}
+	]
+});
+
+svelte.run("heading-group in svelte", headingGroup, {
+	valid: [
+		{filename: "Card.svelte", code: "<hgroup><h1>Title</h1><p>Subtitle</p></hgroup>"},
+		{filename: "Card.svelte", code: "<div><h1>Title</h1></div>"},
+		{filename: "Card.svelte", code: "<Card><h1>Title</h1><p>Subtitle</p></Card>"}
+	],
+	invalid: [
+		{
+			filename: "Card.svelte",
+			code: "<div><h1>Title</h1><p>Subtitle</p></div>",
+			errors: [{messageId: "preferHgroup", data: {tag: "div"}}]
+		},
+		{
+			filename: "Card.svelte",
+			code: "<header><h1>Title</h1><h2>Subtitle</h2></header>",
+			errors: [{messageId: "preferHgroup", data: {tag: "header"}}]
+		}
+	]
+});
+
+astro.run("heading-group in astro", headingGroup, {
+	valid: [
+		{filename: "index.astro", code: "---\n---\n<hgroup><h1>Title</h1><p>Subtitle</p></hgroup>"},
+		{filename: "index.astro", code: "---\n---\n<div><h1>Title</h1></div>"}
+	],
+	invalid: [
+		{
+			filename: "index.astro",
+			code: "---\n---\n<div><h1>Title</h1><p>Subtitle</p></div>",
+			errors: [{messageId: "preferHgroup", data: {tag: "div"}}]
+		},
+		{
+			filename: "index.astro",
+			code: "---\n---\n<header><h1>Title</h1><p>Subtitle</p></header>",
+			errors: [{messageId: "preferHgroup", data: {tag: "header"}}]
+		}
+	]
+});
+
+html.run("heading-group in html", headingGroup, {
+	valid: [
+		{filename: "index.html", code: "<hgroup><h1>Title</h1><p>Subtitle</p></hgroup>"},
+		{filename: "index.html", code: "<div><h1>Title</h1></div>"}
+	],
+	invalid: [
+		{
+			filename: "index.html",
+			code: "<div><h1>Title</h1><p>Subtitle</p></div>",
+			errors: [{messageId: "preferHgroup", data: {tag: "div"}}]
+		},
+		{
+			filename: "index.html",
+			code: "<header><h1>Title</h1><h2>Subtitle</h2><p>Description</p></header>",
+			errors: [{messageId: "preferHgroup", data: {tag: "header"}}]
+		}
 	]
 });

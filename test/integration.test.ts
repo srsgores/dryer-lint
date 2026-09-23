@@ -61,6 +61,7 @@ test("the house config reads svelte, astro and typescript in one run", async fun
 	assert.ok(reported(said, "Card.svelte", "dryer/logical-classes", "mt-4 is a physical property; use mbs-4"));
 	assert.ok(reported(said, "Card.svelte", "dryer/natural-size", "size-6 sets a physical width and height"));
 	assert.ok(reported(said, "Card.svelte", "dryer/unbroken-sentences", "This sentence runs onto the next line"));
+	assert.ok(reported(said, "Card.svelte", "dryer/heading-group", "probably meant to use an <hgroup> instead"));
 	assert.ok(reported(said, "pages/page.astro", "dryer/logical-classes", "mb-4 is a physical property; use mbe-4"));
 	assert.ok(reported(said, "pages/page.astro", "dryer/logical-classes", "text-left is a physical alignment; use text-start"));
 	assert.ok(reported(said, "pages/page.astro", "dryer/natural-size", "h-64 pins an element to a fixed block size"));

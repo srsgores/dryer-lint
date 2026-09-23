@@ -21,6 +21,7 @@ import arrayDestructuring from "#eslint/rules/array-destructuring.ts";
 import classList from "#eslint/rules/class-list.ts";
 import componentSlot from "#eslint/rules/component-slot.ts";
 import explicitFragment from "#eslint/rules/explicit-fragment.ts";
+import headingGroup from "#eslint/rules/heading-group.ts";
 import imageLayout from "#eslint/rules/image-layout.ts";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
 import namedFunctions from "#eslint/rules/named-functions.ts";
@@ -51,6 +52,7 @@ export const plugin = {
 		"class-list": classList,
 		"component-slot": componentSlot,
 		"explicit-fragment": explicitFragment,
+		"heading-group": headingGroup,
 		"image-layout": imageLayout,
 		"logical-classes": logicalClasses,
 		"named-functions": namedFunctions,
@@ -65,6 +67,7 @@ export const plugin = {
 		"no-prose-line-comments": noProseLineComments,
 		"notes-are-asides": notesAreAsides,
 		"one-return": oneReturn,
+		"prefer-hgroup": headingGroup,
 		"spread-attributes": spreadAttributes,
 		"switch-break": switchBreak,
 		"theme-colours": themeColours,
@@ -322,6 +325,7 @@ function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
 		"dryer/top-level-functions": "error",
 		"dryer/aliased-imports": ["error", options.aliases ?? DEFAULT_ALIASES],
 		"dryer/array-destructuring": "warn",
+		"dryer/heading-group": "warn",
 		"dryer/types-directory": "warn",
 		"dryer/switch-break": "error",
 		"dryer/no-array-chain": "error",
@@ -410,7 +414,7 @@ async function buildHtmlLayers(): Promise<Linter.Config[]> {
 			languageOptions: {
 				parser: htmlParser
 			},
-			rules: {"dryer/no-bare-divs": "error"}
+			rules: {"dryer/no-bare-divs": "error", "dryer/heading-group": "warn"}
 		}
 	];
 }

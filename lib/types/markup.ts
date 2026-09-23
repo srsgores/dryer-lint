@@ -8,5 +8,6 @@ export interface TaggedNode {
 	openingElement?: {name?: {type?: string; name?: string}; attributes?: unknown[]};
 	startTag?: {attributes?: unknown[]};
 	attributes?: unknown[];
+	children?: unknown[];
 	parent?: unknown;
 }

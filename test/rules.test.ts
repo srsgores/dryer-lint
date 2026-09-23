@@ -4,6 +4,7 @@ import {RuleTester} from "eslint";
 import tseslint from "typescript-eslint";
 import aliasedImports from "#eslint/rules/aliased-imports.ts";
 import arrayDestructuring from "#eslint/rules/array-destructuring.ts";
+import headingGroup from "#eslint/rules/heading-group.ts";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
 import namedFunctions from "#eslint/rules/named-functions.ts";
 import namedPatterns from "#eslint/rules/named-patterns.ts";
@@ -236,6 +237,41 @@ jsx.run("no-bare-divs", noBareDivs, {
 		{code: "const element = <main><div></div></main>;", errors: [{messageId: "bareDiv"}]},
 		{code: "const element = <dl><div><div></div></div></dl>;", errors: [{messageId: "bareDiv"}]},
 		{code: "const element = <dl><dt>Term</dt><dd><div></div></dd></dl>;", errors: [{messageId: "bareDiv"}]}
+	]
+});
+
+jsx.run("heading-group", headingGroup, {
+	valid: [
+		{code: "const element = <hgroup><h1>Title</h1><p>Subtitle</p></hgroup>;"},
+		{code: "const element = <hgroup><h1>Title</h1><h2>Subtitle</h2></hgroup>;"},
+		{code: "const element = <div><h1>Title</h1></div>;"},
+		{code: "const element = <div><p>First paragraph</p><p>Second paragraph</p></div>;"},
+		{code: "const element = <div><p>Subtitle</p><h1>Title</h1></div>;"},
+		{code: "const element = <div><h1>Title</h1><p>Subtitle</p><button>Action</button></div>;"},
+		{code: "const element = <div>Hello <h1>Title</h1><p>Subtitle</p></div>;"},
+		{code: "const element = <Header><h1>Title</h1><p>Subtitle</p></Header>;"}
+	],
+	invalid: [
+		{
+			code: "const element = <div><h1>Title</h1><p>Subtitle</p></div>;",
+			errors: [{messageId: "preferHgroup", data: {tag: "div"}}]
+		},
+		{
+			code: "const element = <header><h1>Title</h1><p>Subtitle</p></header>;",
+			errors: [{messageId: "preferHgroup", data: {tag: "header"}}]
+		},
+		{
+			code: "const element = <section><h1>Title</h1><h2>Subtitle</h2></section>;",
+			errors: [{messageId: "preferHgroup", data: {tag: "section"}}]
+		},
+		{
+			code: 'const element = <div className="hero"><h1>Title</h1><p>One</p><p>Two</p></div>;',
+			errors: [{messageId: "preferHgroup", data: {tag: "div"}}]
+		},
+		{
+			code: "const element = <div><h1>Title</h1><h2>Sub 1</h2><h3>Sub 2</h3><p>Desc</p></div>;",
+			errors: [{messageId: "preferHgroup", data: {tag: "div"}}]
+		}
 	]
 });
 
