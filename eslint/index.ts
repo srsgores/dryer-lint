@@ -22,6 +22,7 @@ import classList from "#eslint/rules/class-list.ts";
 import componentSlot from "#eslint/rules/component-slot.ts";
 import explicitFragment from "#eslint/rules/explicit-fragment.ts";
 import headingGroup from "#eslint/rules/heading-group.ts";
+import hiddenAttribute from "#eslint/rules/hidden-attribute.ts";
 import imageLayout from "#eslint/rules/image-layout.ts";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
 import namedFunctions from "#eslint/rules/named-functions.ts";
@@ -30,6 +31,7 @@ import naturalSize from "#eslint/rules/natural-size.ts";
 import noArrayChain from "#eslint/rules/no-array-chain.ts";
 import noBareDivs from "#eslint/rules/no-bare-divs.ts";
 import noFrontmatterClasses from "#eslint/rules/no-frontmatter-classes.ts";
+import noHiddenClasses from "#eslint/rules/no-hidden-classes.ts";
 import noInlineSql from "#eslint/rules/no-inline-sql.ts";
 import noProseLineComments from "#eslint/rules/no-prose-line-comments.ts";
 import notesAreAsides from "#eslint/rules/notes-are-asides.ts";
@@ -53,6 +55,7 @@ export const plugin = {
 		"component-slot": componentSlot,
 		"explicit-fragment": explicitFragment,
 		"heading-group": headingGroup,
+		"hidden-attribute": hiddenAttribute,
 		"image-layout": imageLayout,
 		"logical-classes": logicalClasses,
 		"named-functions": namedFunctions,
@@ -62,6 +65,9 @@ export const plugin = {
 		"no-bare-div": noBareDivs,
 		"no-bare-divs": noBareDivs,
 		"no-frontmatter-classes": noFrontmatterClasses,
+		"no-hidden-attribute": hiddenAttribute,
+		"no-hidden-class": noHiddenClasses,
+		"no-hidden-classes": noHiddenClasses,
 		"no-inline-sql": noInlineSql,
 		"no-nested-functions": topLevelFunctions,
 		"no-prose-line-comments": noProseLineComments,
@@ -330,6 +336,8 @@ function buildHouseRules(options: DryerLintOptions): Linter.RulesRecord {
 		"dryer/switch-break": "error",
 		"dryer/no-array-chain": "error",
 		"dryer/no-bare-divs": "error",
+		"dryer/no-hidden-classes": "error",
+		"dryer/hidden-attribute": "warn",
 		"dryer/logical-classes": "error",
 		"dryer/natural-size": ["error", {allowMaxInline: options.allowMaxInline ?? true}],
 		"dryer/no-inline-sql": options.sql === true ? "error" : "off",
@@ -414,7 +422,12 @@ async function buildHtmlLayers(): Promise<Linter.Config[]> {
 			languageOptions: {
 				parser: htmlParser
 			},
-			rules: {"dryer/no-bare-divs": "error", "dryer/heading-group": "warn"}
+			rules: {
+				"dryer/no-bare-divs": "error",
+				"dryer/heading-group": "warn",
+				"dryer/no-hidden-classes": "error",
+				"dryer/hidden-attribute": "warn"
+			}
 		}
 	];
 }

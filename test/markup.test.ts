@@ -5,10 +5,12 @@ import htmlParser from "@html-eslint/parser";
 import * as astroParser from "astro-eslint-parser";
 import svelteParser from "svelte-eslint-parser";
 import tseslint from "typescript-eslint";
-import logicalClasses from "#eslint/rules/logical-classes.ts";
 import headingGroup from "#eslint/rules/heading-group.ts";
+import hiddenAttribute from "#eslint/rules/hidden-attribute.ts";
+import logicalClasses from "#eslint/rules/logical-classes.ts";
 import naturalSize from "#eslint/rules/natural-size.ts";
 import noBareDivs from "#eslint/rules/no-bare-divs.ts";
+import noHiddenClasses from "#eslint/rules/no-hidden-classes.ts";
 import typesDirectory from "#eslint/rules/types-directory.ts";
 import unbrokenSentences from "#eslint/rules/unbroken-sentences.ts";
 
@@ -262,4 +264,95 @@ html.run("heading-group in html", headingGroup, {
 			errors: [{messageId: "preferHgroup", data: {tag: "header"}}]
 		}
 	]
+});
+
+svelte.run("no-hidden-classes in svelte", noHiddenClasses, {
+	valid: [
+		{filename: "Card.svelte", code: '<div class="sr-only"></div>'},
+		{filename: "Card.svelte", code: '<div class="not-sr-only"></div>'},
+		{filename: "Card.svelte", code: '<input type="hidden" />'},
+		{filename: "Card.svelte", code: '<div class="overflow-hidden"></div>'}
+	],
+	invalid: [
+		{
+			filename: "Card.svelte",
+			code: '<div class="hidden"></div>',
+			errors: [{messageId: "noHiddenClass", data: {token: "hidden"}}]
+		},
+		{
+			filename: "Card.svelte",
+			code: "<div class:hidden={isClosed}></div>",
+			errors: [{messageId: "noHiddenClass", data: {token: "hidden"}}]
+		}
+	]
+});
+
+astro.run("no-hidden-classes in astro", noHiddenClasses, {
+	valid: [
+		{filename: "index.astro", code: '---\n---\n<div class="sr-only"></div>'},
+		{filename: "index.astro", code: '---\n---\n<input type="hidden" />'}
+	],
+	invalid: [
+		{
+			filename: "index.astro",
+			code: '---\n---\n<div class="hidden"></div>',
+			errors: [{messageId: "noHiddenClass", data: {token: "hidden"}}]
+		},
+		{
+			filename: "index.astro",
+			code: '---\n---\n<div class="sm:hidden"></div>',
+			errors: [{messageId: "noHiddenClass", data: {token: "sm:hidden"}}]
+		}
+	]
+});
+
+html.run("no-hidden-classes in html", noHiddenClasses, {
+	valid: [
+		{filename: "index.html", code: '<div class="sr-only"></div>'},
+		{filename: "index.html", code: '<input type="hidden">'}
+	],
+	invalid: [
+		{
+			filename: "index.html",
+			code: '<div class="hidden"></div>',
+			errors: [{messageId: "noHiddenClass", data: {token: "hidden"}}]
+		}
+	]
+});
+
+svelte.run("hidden-attribute in svelte", hiddenAttribute, {
+	valid: [
+		{filename: "Card.svelte", code: "<div></div>"},
+		{filename: "Card.svelte", code: '<div class="sr-only"></div>'},
+		{filename: "Card.svelte", code: "<div hidden={false}></div>"}
+	],
+	invalid: [
+		{filename: "Card.svelte", code: "<div hidden></div>", errors: [{messageId: "hiddenAttribute"}]},
+		{filename: "Card.svelte", code: "<div {hidden}></div>", errors: [{messageId: "hiddenAttribute"}]},
+		{filename: "Card.svelte", code: "<div hidden={true}></div>", errors: [{messageId: "hiddenAttribute"}]}
+	]
+});
+
+astro.run("hidden-attribute in astro", hiddenAttribute, {
+	valid: [
+		{filename: "index.astro", code: "---\n---\n<div></div>"},
+		{filename: "index.astro", code: "---\n---\n<div hidden={false}></div>"}
+	],
+	invalid: [
+		{
+			filename: "index.astro",
+			code: "---\n---\n<div hidden></div>",
+			errors: [{messageId: "hiddenAttribute"}]
+		},
+		{
+			filename: "index.astro",
+			code: '---\n---\n<div hidden="until-found"></div>',
+			errors: [{messageId: "hiddenAttribute"}]
+		}
+	]
+});
+
+html.run("hidden-attribute in html", hiddenAttribute, {
+	valid: [{filename: "index.html", code: "<div></div>"}],
+	invalid: [{filename: "index.html", code: "<div hidden></div>", errors: [{messageId: "hiddenAttribute"}]}]
 });

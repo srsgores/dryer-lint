@@ -5,12 +5,14 @@ import tseslint from "typescript-eslint";
 import aliasedImports from "#eslint/rules/aliased-imports.ts";
 import arrayDestructuring from "#eslint/rules/array-destructuring.ts";
 import headingGroup from "#eslint/rules/heading-group.ts";
+import hiddenAttribute from "#eslint/rules/hidden-attribute.ts";
 import logicalClasses from "#eslint/rules/logical-classes.ts";
 import namedFunctions from "#eslint/rules/named-functions.ts";
 import namedPatterns from "#eslint/rules/named-patterns.ts";
 import naturalSize from "#eslint/rules/natural-size.ts";
 import noArrayChain from "#eslint/rules/no-array-chain.ts";
 import noBareDivs from "#eslint/rules/no-bare-divs.ts";
+import noHiddenClasses from "#eslint/rules/no-hidden-classes.ts";
 import noInlineSql from "#eslint/rules/no-inline-sql.ts";
 import noProseLineComments from "#eslint/rules/no-prose-line-comments.ts";
 import notesAreAsides from "#eslint/rules/notes-are-asides.ts";
@@ -307,5 +309,34 @@ script.run("top-level-functions", topLevelFunctions, {
 			code: "function outer() { let fn; fn = function fn() {}; }",
 			errors: [{messageId: "nested", data: {name: "fn"}}]
 		}
+	]
+});
+
+jsx.run("no-hidden-classes in JSX", noHiddenClasses, {
+	valid: [
+		{code: 'const element = <div className="sr-only"></div>;'},
+		{code: 'const element = <div className="not-sr-only"></div>;'},
+		{code: 'const element = <input type="hidden" />;'},
+		{code: 'const element = <div className="overflow-hidden"></div>;'},
+		{code: 'const element = <div className="backface-hidden"></div>;'}
+	],
+	invalid: [
+		{code: 'const element = <div className="hidden"></div>;', errors: [{messageId: "noHiddenClass", data: {token: "hidden"}}]},
+		{code: 'const element = <div className="sm:hidden"></div>;', errors: [{messageId: "noHiddenClass", data: {token: "sm:hidden"}}]},
+		{code: 'const element = <div class="hidden"></div>;', errors: [{messageId: "noHiddenClass", data: {token: "hidden"}}]}
+	]
+});
+
+jsx.run("hidden-attribute", hiddenAttribute, {
+	valid: [
+		{code: "const element = <div></div>;"},
+		{code: 'const element = <div className="sr-only"></div>;'},
+		{code: "const element = <div hidden={false}></div>;"}
+	],
+	invalid: [
+		{code: "const element = <div hidden></div>;", errors: [{messageId: "hiddenAttribute"}]},
+		{code: "const element = <div hidden={true}></div>;", errors: [{messageId: "hiddenAttribute"}]},
+		{code: 'const element = <div hidden="until-found"></div>;', errors: [{messageId: "hiddenAttribute"}]},
+		{code: "const element = <div hidden={shouldHide}></div>;", errors: [{messageId: "hiddenAttribute"}]}
 	]
 });
